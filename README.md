@@ -1,8 +1,32 @@
 # WebReduce
 
-Write arbitrary [MapReduce](http://en.wikipedia.org/wiki/MapReduce) jobs in [Javascript](http://en.wikipedia.org/wiki/JavaScript) to get a potential endless stream of documents from a list of datasources.
+Define behaviour as [Purely functional](http://en.wikipedia.org/wiki/Purely_functional) handlers implemented in [Javascript](http://en.wikipedia.org/wiki/JavaScript). Store the behaviour and provide entities via [POST](http://en.wikipedia.org/wiki/POST_(HTTP)) calls which the behaviour is applied on.
+
+To control the flow of entities through and out of the system WebReduce knows continuations. **Continuations** are declared as absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier)s and SHOULD use a supported protocol. To reference an internal continuation WebReduce knows a custom protocol `wr://`.
 
 ## API
+
+Create a behaviour and its continuation:
+
+    POST /foo HTTP/1.1
+    content-type: text/javascript
+    x-wr-cc: wr://local/baz
+
+    function(data) { return data; }
+    ---
+    302
+    Location: /bar
+
+Post an entity to the created behaviour:
+
+    POST /bar HTTP/1.1
+    content-type: octet/stream
+
+    "Hello World!"
+    ---
+    204
+
+
 
 ## Development
 
