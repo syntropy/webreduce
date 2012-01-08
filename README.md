@@ -37,6 +37,15 @@ To reference an internal continuation WebReduce knows a custom protocol called `
 
     wr:abc123
 
+#### HTTP
+
+For a continuation with the scheme `http` the entity will be POSTed like this, where `URI` is the identifier of the continuation:
+
+    POST <URI> HTTP/1.1
+    content-type: octet/stream
+
+    "Hello World!"
+
 ## Development
 
 ### Setup
