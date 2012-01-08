@@ -51,14 +51,14 @@ This project is versioned with the help of the [Semantic Versioning Specificatio
 
 **normal**
 
-1. [Fork](http://help.github.com/forking/) OAuth2
+1. [Fork](http://help.github.com/forking/) WebReduce
 2. Create a topic branch `git checkout -b my_branch`
 3. Push to your branch `git push origin my_branch`
 4. Create a [Pull Request](http://help.github.com/pull-requests/) from your branch
 
 **git-flow**
 
-1. [Fork](http://help.github.com/forking/) OAuth2
+1. [Fork](http://help.github.com/forking/) WebReduce
 2. Create a feature `git flow feature start my-feature`
 3. Publish your featue `git flow feature publish my-feature`
 4. Create a [Pull Request](http://help.github.com/pull-requests/) from your branch
