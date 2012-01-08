@@ -10,35 +10,35 @@ Define behaviour as [Purely functional](http://en.wikipedia.org/wiki/Purely_func
 
 Create a behaviour, its destinations and its sources:
 
-    POST /behaviour HTTP/1.1
+    POST http://lolcathost/behaviour HTTP/1.1
     content-type: text/javascript
-    x-wr-destination: wr:def456
-    x-wr-source: wr:ghi789
+    x-wr-destination: http://lolcathost/meow
+    x-wr-source: http://lolcathost/ninjas
 
     function main(data) { return data; }
     ---
     302
-    Location: /abc123
+    Location: http://lolcathost/abc123
 
 Update the metainformation of a created behaviour:
 
-    PUT /abc123 HTTP/1.1
-    x-wr-destination: ws://sudo.com/make/sandwich
+    PUT http://lolcathost/abc123 HTTP/1.1
+    x-wr-destination: http://sudo.com/make/sandwich
     x-wr-source: http://lolcathost/nyan
     ---
     204
 
 Request the metainformation for a behaviour:
 
-    HEAD /abc123 HTTP/1.1
+    HEAD http://lolcathost/abc123 HTTP/1.1
     ---
     200
-    x-wr-destination: ws://sudo.com/make/me/sandwich
+    x-wr-destination: http://sudo.com/make/me/sandwich
     x-wr-source: http://lolcathost/nyan
 
 Delete a behaviour:
 
-    DELETE /abc123 HTTP/1.1
+    DELETE http://lolcathost/abc123 HTTP/1.1
     ---
     204
 
@@ -47,13 +47,9 @@ Delete a behaviour:
 
 Destinations and sources MUST be a valid absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier) and can be anything from HTTP url to a database location, but MUST be of a supported protocol. References are passed via the `x-wr-destination` & `x-wr-source` header.
 
-To reference an internal endpoint WebReduce knows a custom protocol called `wr`. It consists of the scheme `wr` and a path like `abc123` in normal cases a path returned by a behaviour creation.
-
-    wr:abc123
-
 Create multiple destinations or sources with the help of a comma-sperated list:
 
-    x-wr-destination: wr:abc123,http://lolcathost/nyan
+    x-wr-destination: http://lolcathost/sandwich,http://lolcathost/nyan
 
 ## Development
 
