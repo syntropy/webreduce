@@ -45,7 +45,7 @@ In this phase, only meta information should be touched, like bumping the version
 
 ### Versioning
 
-This project is versioned with the help of the [Semantic Versioning Specification](http://semver.org/) using `0.0.0` as the initial version. Please make sure you have read the guidelines before increasing a version number either for a release or a hotfix. As this is not a library project, think about new features from a user perspective.
+This project is versioned with the help of the [Semantic Versioning Specification](http://semver.org/) using `0.0.0` as the initial version. Please make sure you have read the guidelines before increasing a version number either for a release or a hotfix.
 
 ## Contributing
 
