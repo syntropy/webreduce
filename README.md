@@ -4,7 +4,9 @@ Write arbitrary [MapReduce](http://en.wikipedia.org/wiki/MapReduce) jobs in [Jav
 
 ## API
 
-## Repository
+## Development
+
+### Setup
 
 ### Branching
 
