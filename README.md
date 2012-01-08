@@ -2,49 +2,54 @@
 
 Scriptable resource manipulation tool.
 
-Define behaviour as [Purely functional](http://en.wikipedia.org/wiki/Purely_functional) handler implemented in [Javascript](http://en.wikipedia.org/wiki/JavaScript) and control the flow through and out of the system with the help of a [Continuation](http://en.wikipedia.org/wiki/Continuation).
+Define behaviour as [Purely functional](http://en.wikipedia.org/wiki/Purely_functional) handler implemented in [Javascript](http://en.wikipedia.org/wiki/JavaScript). Control the flow of entities in, through and out of the system with the help of Destinations & Sources.
 
 ## API
 
 ### Behaviour
 
-Create a behaviour and its continuation:
+Create a behaviour, its destinations and its sources:
 
-    POST /jobs HTTP/1.1
+    POST http://lolcathost/behaviour HTTP/1.1
     content-type: text/javascript
-    x-wr-cc: wr:def456
+    x-wr-destination: http://lolcathost/meow
+    x-wr-source: http://lolcathost/ninjas
 
-    function(data) { return data; }
+    function main(data) { return data; }
     ---
     302
-    Location: /abc123
+    Location: http://lolcathost/abc123
 
-Post an entity to the created behaviour:
+Update the metainformation of a created behaviour:
 
-    POST /abc123 HTTP/1.1
-    content-type: octet/stream
+    PUT http://lolcathost/abc123 HTTP/1.1
+    x-wr-destination: http://sudo.com/make/sandwich
+    x-wr-source: http://lolcathost/nyan
+    ---
+    204
 
-    "Hello World!"
+Request the metainformation for a behaviour:
+
+    HEAD http://lolcathost/abc123 HTTP/1.1
+    ---
+    200
+    x-wr-destination: http://sudo.com/make/me/sandwich
+    x-wr-source: http://lolcathost/nyan
+
+Delete a behaviour:
+
+    DELETE http://lolcathost/abc123 HTTP/1.1
     ---
     204
 
 
-### Continuation
+### Destination & Source
 
-Valid continuations MUST be a valid absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier) and can be anything from HTTP url to database location, but MUST be of a supported protocol. References to continuations are passed via the `x-wr-cc` header.
+Destinations and sources MUST be a valid absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier) and can be anything from HTTP url to a database location, but MUST be of a supported protocol. References are passed via the `x-wr-destination` & `x-wr-source` header.
 
-To reference an internal continuation WebReduce knows a custom protocol called `wr`. It consists of the scheme `wr` and a path like `abc123` in normal cases a path returned by a behaviour creation.
+Create multiple destinations or sources with the help of a comma-sperated list:
 
-    wr:abc123
-
-#### HTTP
-
-For a continuation with the scheme `http` the entity will be POSTed like this, where `URI` is the identifier of the continuation:
-
-    POST <URI> HTTP/1.1
-    content-type: octet/stream
-
-    "Hello World!"
+    x-wr-destination: http://lolcathost/sandwich,http://lolcathost/nyan
 
 ## Development
 
