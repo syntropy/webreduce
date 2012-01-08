@@ -1,8 +1,8 @@
 # WebReduce
 
-Define behaviour as [Purely functional](http://en.wikipedia.org/wiki/Purely_functional) handlers implemented in [Javascript](http://en.wikipedia.org/wiki/JavaScript). Store the behaviour and provide entities via [POST](http://en.wikipedia.org/wiki/POST_(HTTP)) calls which the behaviour is applied on.
+Scriptable resource manipulation tool.
 
-To control the flow of entities through and out of the system WebReduce knows continuations. **Continuations** are declared as absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier)s and SHOULD use a supported protocol.
+Define behaviour as [Purely functional](http://en.wikipedia.org/wiki/Purely_functional) handler implemented in [Javascript](http://en.wikipedia.org/wiki/JavaScript) and control the flow through and out of the system with the help of a [Continuation](http://en.wikipedia.org/wiki/Continuation).
 
 ## API
 
@@ -31,9 +31,9 @@ Post an entity to the created behaviour:
 
 ### Continuation
 
-Valid continuations MUST be a valid absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier) and can be anything from HTTP url to database location. References to continuations are passed via the `x-wr-cc` header.
+Valid continuations MUST be a valid absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier) and can be anything from HTTP url to database location, but MUST be of a supported protocol. References to continuations are passed via the `x-wr-cc` header.
 
-To reference an internal continuation WebReduce knows a custom protocol called `wr`. It consists of the scheme `wr` and a path like `abc123` in normal cases a path returned by a behaviour creation. Example:
+To reference an internal continuation WebReduce knows a custom protocol called `wr`. It consists of the scheme `wr` and a path like `abc123` in normal cases a path returned by a behaviour creation.
 
     wr:abc123
 
