@@ -51,6 +51,30 @@ Create multiple destinations or sources with the help of a comma-sperated list:
 
     x-wr-destination: http://lolcathost/sandwich,http://lolcathost/nyan
 
+### Persistent Objects
+
+This example assumes the Javascript interpreter:
+
+``` javascript
+window.WebReduce = {
+  // Returns the current persistent object
+  getPersistentObject = function() {
+    // native
+    return obj;
+  },
+
+  // Sets the persistent object
+  setPersistentObject = function(obj) {
+    // native
+  },
+
+  // Deep-merges `obj` into the persistent object
+  mergePersistentObject = function(obj) {
+    // native
+  }
+};
+```
+
 ## Development
 
 ### Setup
