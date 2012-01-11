@@ -51,9 +51,15 @@ Create multiple destinations or sources with the help of a comma-sperated list:
 
     x-wr-destination: http://lolcathost/sandwich,http://lolcathost/nyan
 
+### Languages
+
+At the time, only JavaScript is supported. The design allows adding new interpreters very easily, though.
+
 ### Persistent Objects
 
-This example assumes the Javascript interpreter:
+Every behaviour has the ability so save data which is kept across invocations. The method of manipulating said data might differ between languages.
+
+#### Javascript
 
 ``` javascript
 window.WebReduce = {
