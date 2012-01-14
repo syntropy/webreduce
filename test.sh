@@ -1,3 +1,3 @@
 #!/bin/bash
 
-roundup test/integration/apps-test.sh
+roundup test/system/apps-test.sh
