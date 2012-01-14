@@ -1,0 +1,59 @@
+#!/bin/bash
+
+function usage {
+  local command=$(basename $0)
+
+  cat<<EOF
+Preconfigured utility for API requests
+
+Usage: $command -u <url> -v [<verb>] -b [<body>] [-d]
+
+Options:
+    -u <url>  : URL that it is requested. example: http://lolcathost:11111/nyan
+    -v <verb> : HTTP verb which defaults to GET. example: POST
+    -b <body> : Payload to sent. example: '{ "nyan": "cat" }'
+    -d        : debug output
+    -h        : Shows usage
+
+EOF
+}
+
+while getopts "dhb:u:v:" option
+do
+  case "$option" in
+    u) url="$OPTARG" ;;
+    v) verb="$OPTARG" ;;
+    b) body="$OPTARG" ;;
+    d) set -x ;;
+    h) usage; exit 0 ;;
+    [?]) usage && exit 1 ;;
+  esac
+done
+
+test -n "$url"              || { usage; echo 'no URL given'; exit 2; }
+
+default_verb="GET"
+verb=${verb:-$default_verb}
+
+#################################################################
+
+
+if [ ! -z "$body" ]
+then
+  curl \
+    -w '%{http_code}' \
+    -isL \
+    -X $verb \
+    -H 'content-type: application/json' \
+    -d $body \
+    -o /dev/null \
+    $url
+else
+  curl \
+    -w '%{http_code}' \
+    -isL \
+    -X $verb \
+    -H 'content-type: application/json' \
+    -o /dev/null \
+    $url
+fi
