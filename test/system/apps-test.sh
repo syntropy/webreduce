@@ -9,13 +9,19 @@ before() {
 }
 
 it_creates_app() {
-  resp=$($req -u "http://localhost:5000/apps/$app_namee" -v "PUT")
+  resp=$($req -u "http://localhost:5000/apps/$app_name" -v "PUT")
+  code=$(extract_code $resp)
 
-  test $resp = "201";
+  test $code = "201";
 }
 
 it_updates_app() {
   resp=$($req -u "http://localhost:5000/apps/$app_name" -v "PUT")
+  code=$(extract_code $resp)
 
-  test $resp = 204;
+  test $code = 204;
+}
+
+extract_code() {
+  echo $2
 }
