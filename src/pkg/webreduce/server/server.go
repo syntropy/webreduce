@@ -2,17 +2,17 @@ package server
 
 import (
 	// "launchpad.net/gobson/bson"
-	"launchpad.net/mgo"
 	"fmt"
+	"launchpad.net/mgo"
 	"net/http"
 	"regexp"
 	"runtime/debug"
 )
 
 type Server struct {
-	Prefix    string
-	DbSession *mgo.Session
-	Db mgo.Database
+	Prefix        string
+	DbSession     *mgo.Session
+	Db            mgo.Database
 	AppCollection mgo.Collection
 }
 
@@ -29,7 +29,7 @@ func NewServer(prefix string, dbaddr string, testmode bool) (srv *Server, err er
 	dbname := "webreduce"
 
 	if testmode {
-		dbname = "test"+dbname
+		dbname = "test" + dbname
 	}
 
 	db := session.DB(dbname)
@@ -43,11 +43,11 @@ func NewServer(prefix string, dbaddr string, testmode bool) (srv *Server, err er
 	appCollection := db.C("apps")
 
 	index := mgo.Index{
-	    Key: []string{"name"},
-	    Unique: true,
-	    DropDups: true,
-	    Background: true,
-	    Sparse: true,
+		Key:        []string{"name"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
 	}
 
 	idxErr := appCollection.EnsureIndex(index)
@@ -74,7 +74,7 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 
 	namePattern := "([a-z][a-z0-9]*)"
-	regex := regexp.MustCompile(srv.Prefix+namePattern)
+	regex := regexp.MustCompile(srv.Prefix + namePattern)
 
 	matches := regex.FindStringSubmatch(path)
 	if len(matches) < 2 {
