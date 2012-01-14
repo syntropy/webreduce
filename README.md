@@ -67,6 +67,16 @@ not equal to the provides revision, the server responds with HTTP
 
 ### Setup
 
+### Testing
+
+#### Integration
+
+To run the integration you need [roundup](http://bmizerany.github.com/roundup). Run the test command from the project root:
+
+```
+./test.sh
+```
+
 ### Branching
 
 This repository is organized and maintained with the help of [gitflow](https://github.com/nvie/gitflow). Developers are encouraged to use it when working with this repository.
