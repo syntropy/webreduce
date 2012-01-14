@@ -7,20 +7,27 @@ import (
 )
 
 var (
-	httpAddr   string
-	mongoAddr  string
+	httpAddr  string
+	mongoAddr string
+	testMode  bool
 )
 
 func init() {
-	flag.StringVar(&httpAddr, "listen", "localhost:7000", "http address")
+	flag.StringVar(&httpAddr, "listen", "localhost:5000", "http address")
 	flag.StringVar(&mongoAddr, "dbaddr", "localhost", "database address")
+	flag.BoolVar(&testMode, "testmode", true, "test mode")
 }
 
 func main() {
-	prefix := "/apps"
-	srv := &server.Server{prefix, make(server.WorkerStore)}
+	prefix := "/apps/"
+	srv, err := server.NewServer(prefix, mongoAddr, testMode)
+	if err != nil {
+		panic(err)
+	}
+
 	http.Handle(prefix, srv)
-	err := http.ListenAndServe("localhost:8080", nil)
+
+	err = http.ListenAndServe(httpAddr, nil)
 	if err != nil {
 		panic(err)
 	}

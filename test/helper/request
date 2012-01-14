@@ -47,6 +47,7 @@ then
     $url
 else
   curl \
+    --http1.0 \
     -iL \
     -X $verb \
     -H 'content-type: application/json' \
