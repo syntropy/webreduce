@@ -30,30 +30,27 @@ do
   esac
 done
 
-test -n "$url"              || { usage; echo 'no URL given'; exit 2; }
-
-default_verb="GET"
-verb=${verb:-$default_verb}
+test -n "$url" || { usage; echo 'no URL given'; exit 2; }
 
 #################################################################
 
+default_verb="GET"
+verb=${verb:-$default_verb}
 
 if [ ! -z "$body" ]
 then
   curl \
     -w '%{http_code}' \
-    -isL \
+    -iL \
     -X $verb \
     -H 'content-type: application/json' \
     -d $body \
-    -o /dev/null \
     $url
 else
   curl \
     -w '%{http_code}' \
-    -isL \
+    -iL \
     -X $verb \
     -H 'content-type: application/json' \
-    -o /dev/null \
     $url
 fi
