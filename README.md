@@ -4,52 +4,64 @@ Scriptable resource manipulation tool.
 
 Define behaviour as [Purely functional](http://en.wikipedia.org/wiki/Purely_functional) handler implemented in [Javascript](http://en.wikipedia.org/wiki/JavaScript). Control the flow of entities in, through and out of the system with the help of Destinations & Sources.
 
-## API
+## API Overview
 
-### Behaviour
+### Application
 
-Create a behaviour, its destinations and its sources:
+```
+GET    /apps/<name>                   app info
+PUT    /apps/<name>                   create or update app
+POST   /apps/<name>                   send event to app
+DELETE /apps/<name>                   delete app
+```
 
-    POST http://lolcathost/behaviour HTTP/1.1
-    content-type: text/javascript
-    x-wr-destination: http://lolcathost/meow
-    x-wr-source: http://lolcathost/ninjas
+### Agents
 
-    function main(data) { return data; }
-    ---
-    302
-    Location: http://lolcathost/abc123
+```
+GET    /apps/<name>/agents            list agents
+POST   /apps/<name>/agents            create agent
 
-Update the metainformation of a created behaviour:
+GET    /apps/<name>/agents/<name>     agent info
+PUT    /apps/<name>/agents/<name>     send data to agent
+DELETE /apps/<name>/agents/<name>     delete agent
+```
 
-    PUT http://lolcathost/abc123 HTTP/1.1
-    x-wr-destination: http://sudo.com/make/sandwich
-    x-wr-source: http://lolcathost/nyan
-    ---
-    204
+### Sinks
 
-Request the metainformation for a behaviour:
+```
+GET    /apps/<name>/sinks             list sinks
+POST   /apps/<name>/sinks             create sink
 
-    HEAD http://lolcathost/abc123 HTTP/1.1
-    ---
-    200
-    x-wr-destination: http://sudo.com/make/me/sandwich
-    x-wr-source: http://lolcathost/nyan
+GET    /apps/<name>/sinks/<name>      sink info
+PUT    /apps/<name>/sinks/<name>      send data to sink
+DELETE /apps/<name>/sinks/<name>      delete sink
+```
 
-Delete a behaviour:
+## Create and Update Applications
 
-    DELETE http://lolcathost/abc123 HTTP/1.1
-    ---
-    204
+PUT /apps/<name>
 
+### Create
 
-### Destination & Source
+```json
+{
+    "description": unicode
+}
+```
 
-Destinations and sources MUST be a valid absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier) and can be anything from HTTP url to a database location, but MUST be of a supported protocol. References are passed via the `x-wr-destination` & `x-wr-source` header.
+### Update
 
-Create multiple destinations or sources with the help of a comma-sperated list:
+Updates are similar to creates. The only difference is, that you include the
+revision of the application that should be updated. If the current revision is
+not equal to the provides revision, the server responds with HTTP
 
-    x-wr-destination: http://lolcathost/sandwich,http://lolcathost/nyan
+```json
+{
+    "_rev": "",
+    ...
+    "description": unicode
+}
+```
 
 ## Development
 
