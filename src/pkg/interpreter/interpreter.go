@@ -5,7 +5,7 @@ package interpreter
 type Interpreter interface {
 	// Eval takes a string of code and returns an interpretation
 	// which executes the given code.
-	Eval(code string) Interpretation
+	Eval(code string) (Interpretation, error)
 
 	// The passed function is supposed to be called,
 	// whenever the interpreted code calls emit.

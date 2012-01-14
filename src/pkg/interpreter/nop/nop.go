@@ -14,13 +14,13 @@ func New() *NopInterpreter {
 	}
 }
 
-func (n *NopInterpreter) Eval(code string) interpreter.Interpretation {
+func (n *NopInterpreter) Eval(code string) (interpreter.Interpretation, error) {
 	return func(data, state []byte) []byte {
 		for _, cb := range n.cbs {
 			cb(data)
 		}
 		return state
-	}
+	}, nil
 }
 
 func (n *NopInterpreter) RegisterEmitCallback(cb interpreter.EmitCallback) {
