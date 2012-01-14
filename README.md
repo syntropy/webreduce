@@ -69,9 +69,9 @@ not equal to the provides revision, the server responds with HTTP
 
 ### Testing
 
-#### Integration
+#### System
 
-To run the integration you need [roundup](http://bmizerany.github.com/roundup). Run the test command from the project root:
+To run the [system tests](http://en.wikipedia.org/wiki/System_testing) you need [roundup](http://bmizerany.github.com/roundup). Run the test command from the project root:
 
 ```
 ./test.sh
