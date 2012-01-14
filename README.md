@@ -67,6 +67,35 @@ not equal to the provides revision, the server responds with HTTP
 
 ### Setup
 
+#### Dependencies
+
+* [Go](http://golang.org/) (weekly)
+* [MongoDB](http://mongodb.org) (~2.0.0)
+* [go-gb](http://code.google.com/p/go-gb/) (weekly)
+* [mgo](http://labix.org/mgo) (optional, installed by go-gb)
+
+#### Install
+
+From the root of the project run `gb`:
+
+```
+gb -g
+```
+
+If you want to install WebReduce executables & packages into your `GOROOT` run:
+
+```
+gb -g -i
+```
+
+##### Run
+
+In order to start WebReduce you need a running MongoDB instance.
+
+```
+./_bin/webreduce
+```
+
 ### Testing
 
 #### System
