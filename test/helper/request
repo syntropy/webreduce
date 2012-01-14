@@ -40,7 +40,6 @@ verb=${verb:-$default_verb}
 if [ ! -z "$body" ]
 then
   curl \
-    -w '%{http_code}' \
     -iL \
     -X $verb \
     -H 'content-type: application/json' \
@@ -48,7 +47,6 @@ then
     $url
 else
   curl \
-    -w '%{http_code}' \
     -iL \
     -X $verb \
     -H 'content-type: application/json' \
