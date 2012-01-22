@@ -1,7 +1,7 @@
 package router
 
 import (
-	// "fmt"
+	"net/http"
 	"regexp"
 )
 
@@ -77,14 +77,25 @@ func NewRule(spec string, methods ...string) *Rule {
 }
 
 // Match given path and return named variables.
-func (r *Rule) MatchPath(path string) (variables map[string]string, match bool) {
-	match = r.regex.MatchString(path)
+func (r *Rule) Match(pattern string, method string) (variables map[string]string, match bool) {
+	for _, m := range r.methods {
+		if m == method {
+			match = true
+			break
+		}
+	}
 
 	if !match {
 		return
 	}
 
-	values := r.regex.FindStringSubmatch(path)
+	match = r.regex.MatchString(pattern)
+
+	if !match {
+		return
+	}
+
+	values := r.regex.FindStringSubmatch(pattern)
 	if values == nil {
 		return
 	}
@@ -95,4 +106,49 @@ func (r *Rule) MatchPath(path string) (variables map[string]string, match bool) 
 	}
 
 	return
+}
+
+// A Route associates a Rule and a handler function
+type Route struct {
+	rule Rule
+	handler func(http.ResponseWriter, *http.Request)
+}
+
+// Match given pattern. Documented in Rule.Match
+func (r *Route) Match(pattern string, method string) (variables map[string]string, match bool) {
+	return r.rule.Match(pattern, method)
+}
+
+// A Router dispatches HTTP requests to handlers.
+type Router struct {
+	routes []Route
+}
+
+// Create a new Router
+func NewRouter() Router {
+	r := Router{}
+
+	return r
+}
+
+// Add a route to this router.
+func (r *Router) AddRoute(spec string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
+	rule := *NewRule(spec, methods...)
+	route := Route{rule, handler}
+
+	r.routes = append(r.routes, route)
+}
+
+// Match given pattern. Documented in Rule.Match
+func (r *Router) Match(pattern string, method string) (match bool) {
+	for _, route := range r.routes {
+		if _, matched := route.Match(pattern, method); matched {
+			return matched
+		}
+	}
+	return
+}
+
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+
 }

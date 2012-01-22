@@ -1,6 +1,7 @@
 package router
 
 import (
+	"net/http"
 	"testing"
 )
 
@@ -70,7 +71,7 @@ func TestDynamicRuleSpec(t *testing.T) {
 		t.Errorf("Got Rule.regex %v, expected %v", rule.regex, regex)
 	}
 
-	variables, match := rule.MatchPath("/test/" + values["foo"] + "/" + values["bar"])
+	variables, match := rule.Match("/test/" + values["foo"] + "/" + values["bar"], "GET")
 	if !match {
 		t.Logf("Got match %v, expected %v", match, true)
 		t.FailNow()
@@ -84,6 +85,29 @@ func TestDynamicRuleSpec(t *testing.T) {
 			}
 		} else {
 			t.Errorf("Expected variable '%v' to be in variables.", name)
+		}
+	}
+}
+
+func Handler(w http.ResponseWriter, req *http.Request) {}
+
+func TestStaticRouter(t *testing.T) {
+	router := NewRouter()
+	patterns := []string{"/foo", "/bar"}
+
+	for _, pattern := range patterns {
+		if router.Match(pattern, "GET") {
+			t.Errorf("Pattern '%v' shouldn't match", pattern)
+		}
+	}
+
+	for _, pattern := range patterns {
+		router.AddRoute(pattern, Handler)
+	}
+
+	for _, pattern := range patterns {
+		if !router.Match(pattern, "GET") {
+			t.Errorf("Pattern '%v' should match", pattern)
 		}
 	}
 }
