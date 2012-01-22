@@ -110,7 +110,7 @@ func (r *Rule) Match(pattern string, method string) (variables map[string]string
 
 // A Route associates a Rule and a handler function
 type Route struct {
-	rule Rule
+	rule    Rule
 	handler func(http.ResponseWriter, *http.Request)
 }
 
@@ -140,15 +140,15 @@ func (r *Router) AddRoute(spec string, handler func(http.ResponseWriter, *http.R
 }
 
 // Match given pattern. Documented in Rule.Match
-func (r *Router) Match(pattern string, method string) (match bool) {
+func (r *Router) Match(pattern string, method string) (variables map[string]string, match bool) {
 	for _, route := range r.routes {
-		if _, matched := route.Match(pattern, method); matched {
-			return matched
+		if variables, matched := route.Match(pattern, method); matched {
+			return variables, matched
 		}
 	}
 	return
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-
+	panic("Not Implemented")
 }

@@ -71,7 +71,7 @@ func TestDynamicRuleSpec(t *testing.T) {
 		t.Errorf("Got Rule.regex %v, expected %v", rule.regex, regex)
 	}
 
-	variables, match := rule.Match("/test/" + values["foo"] + "/" + values["bar"], "GET")
+	variables, match := rule.Match("/test/"+values["foo"]+"/"+values["bar"], "GET")
 	if !match {
 		t.Logf("Got match %v, expected %v", match, true)
 		t.FailNow()
@@ -96,7 +96,7 @@ func TestStaticRouter(t *testing.T) {
 	patterns := []string{"/foo", "/bar"}
 
 	for _, pattern := range patterns {
-		if router.Match(pattern, "GET") {
+		if _, m := router.Match(pattern, "GET"); m {
 			t.Errorf("Pattern '%v' shouldn't match", pattern)
 		}
 	}
@@ -106,8 +106,32 @@ func TestStaticRouter(t *testing.T) {
 	}
 
 	for _, pattern := range patterns {
-		if !router.Match(pattern, "GET") {
+		if _, m := router.Match(pattern, "GET"); !m {
 			t.Errorf("Pattern '%v' should match", pattern)
 		}
+	}
+}
+
+func TestDynamicRouter(t *testing.T) {
+	pattern := "/<foo>/<bar>"
+	path := "/baz/qux"
+	router := NewRouter()
+	router.AddRoute(pattern, Handler)
+	vs, m := router.Match(path, "GET")
+	t.Logf("XXX %v", vs)
+
+	if !m {
+		t.Logf("Expected '' to match.", path)
+		t.FailNow()
+	}
+
+	for k, v := range map[string]string{"foo": "baz", "bar": "qux"} {
+		val, found := vs[k]
+		if !found {
+			t.Errorf("Expected variable '%v' to be in variables.", v)
+		} else if val != v {
+			t.Errorf("Got '%v' for %v, expected '%v'", val, k, v)
+		}
+
 	}
 }
