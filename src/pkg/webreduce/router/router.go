@@ -16,9 +16,9 @@ func parseRuleSpec(spec string) (regex *regexp.Regexp, variables []string) {
 
 // Rule is the representation of a URL rule
 type Rule struct {
-	spec string
-	methods []string
-	regex *regexp.Regexp
+	spec      string
+	methods   []string
+	regex     *regexp.Regexp
 	variables []string
 }
 

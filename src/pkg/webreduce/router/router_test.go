@@ -13,7 +13,6 @@ func TestStaticRuleSpec(t *testing.T) {
 	}
 }
 
-
 func TestStaticRuleHeadInjection(t *testing.T) {
 	spec := "/test"
 	rule := NewRule(spec)
@@ -35,10 +34,10 @@ func TestStaticRuleWithMethods(t *testing.T) {
 	spec := "/test"
 	rule := NewRule(spec, "GET", "PUT", "POST", "DELETE")
 	methods := map[string]bool{
-		"HEAD": true,
-		"GET": true,
-		"PUT": true,
-		"POST": true,
+		"HEAD":   true,
+		"GET":    true,
+		"PUT":    true,
+		"POST":   true,
 		"DELETE": true,
 	}
 
