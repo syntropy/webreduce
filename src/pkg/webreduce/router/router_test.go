@@ -47,3 +47,43 @@ func TestStaticRuleWithMethods(t *testing.T) {
 		}
 	}
 }
+
+func TestDynamicRuleSpec(t *testing.T) {
+	spec := "/test/<foo>/<bar>"
+	names := []string{"foo", "bar"}
+	values := map[string]string{"foo": "baz", "bar": "qux"}
+	regex := ("/test/" + NameGroup + "/" + NameGroup)
+	rule := NewRule(spec)
+
+	if vl, nl := len(rule.variables), len(names); vl != nl {
+		t.Logf("Got %v variable names, expected %v.", vl, nl)
+		t.FailNow()
+	}
+
+	for idx, name := range names {
+		if v := rule.variables[idx]; v != name {
+			t.Errorf("Got variable name '%v' on position %v, expected %v.", v, idx, name)
+		}
+	}
+
+	if rule.regex.String() != regex {
+		t.Errorf("Got Rule.regex %v, expected %v", rule.regex, regex)
+	}
+
+	variables, match := rule.MatchPath("/test/" + values["foo"] + "/" + values["bar"])
+	if !match {
+		t.Logf("Got match %v, expected %v", match, true)
+		t.FailNow()
+	}
+
+	for _, name := range names {
+		value, found := variables[name]
+		if found {
+			if v := values[name]; value != v {
+				t.Errorf("Got %v for name '%v', expected %v", value, name, v)
+			}
+		} else {
+			t.Errorf("Expected variable '%v' to be in variables.", name)
+		}
+	}
+}
