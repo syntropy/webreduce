@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"regexp"
+	"sort"
 )
 
 const (
@@ -119,9 +120,28 @@ func (r *Route) Match(pattern string, method string) (variables map[string]strin
 	return r.rule.Match(pattern, method)
 }
 
+// A RoutesList is a sortable list of Routes.
+type RouteList []Route
+
+// Len is required by sort.Interface.
+func (rl RouteList) Len() int {
+    return len(rl)
+}
+
+// Less is required by sort.Interface.
+func (rl RouteList) Less(i, j int) bool {
+    return rl[i].rule.spec < rl[j].rule.spec
+}
+
+// Swap is required by sort.Interface.
+func (rl RouteList) Swap(i, j int) {
+    rl[i].rule.spec, rl[j].rule.spec = rl[j].rule.spec, rl[i].rule.spec
+}
+
 // A Router dispatches HTTP requests to handlers.
 type Router struct {
-	routes []Route
+	routes RouteList
+	sorted bool
 }
 
 // Create a new Router
@@ -141,6 +161,11 @@ func (r *Router) AddRoute(spec string, handler func(http.ResponseWriter, *http.R
 
 // Match given pattern. Documented in Rule.Match
 func (r *Router) Match(pattern string, method string) (variables map[string]string, match bool) {
+	if !r.sorted {
+		sort.Sort(r.routes)
+		r.sorted = true
+	}
+
 	for _, route := range r.routes {
 		if variables, matched := route.Match(pattern, method); matched {
 			return variables, matched
