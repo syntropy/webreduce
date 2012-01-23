@@ -131,6 +131,5 @@ func TestDynamicRouter(t *testing.T) {
 		} else if val != v {
 			t.Errorf("Got '%v' for %v, expected '%v'", val, k, v)
 		}
-
 	}
 }
