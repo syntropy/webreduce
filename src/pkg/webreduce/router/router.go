@@ -14,43 +14,43 @@ const (
 	NamePattern = StartToken + NameGroup + EndToken
 )
 
-// the regular expression to extract variable names from rule specs
+// the regular expression to extract variable names from rule patterns
 var ruleRegex *regexp.Regexp = regexp.MustCompile(NamePattern)
 
-// parses a rule spec in the form /foo/<bar> where 'bar' is the name of a
+// parses a rule pattern in the form /foo/<bar> where 'bar' is the name of a
 // variable. It returns a regex.Regexp for extraction of variables and
 // the list of names for those variables
-func parseRuleSpec(spec string) (regex *regexp.Regexp, vs []string) {
-	matches := ruleRegex.FindAllStringSubmatch(spec, -1)
+func parseRulePattern(pattern string) (regex *regexp.Regexp, vs []string) {
+	matches := ruleRegex.FindAllStringSubmatch(pattern, -1)
 
 	if matches == nil {
-		regex = regexp.MustCompile(regexp.QuoteMeta(spec))
+		regex = regexp.MustCompile(regexp.QuoteMeta(pattern))
 		return
 	}
 
 	for _, match := range matches {
 		vs = append(vs, match[1])
-		spec = regexp.MustCompile(match[0]).ReplaceAllString(spec, "([a-z]+)")
+		pattern = regexp.MustCompile(match[0]).ReplaceAllString(pattern, "([a-z]+)")
 	}
 
-	regex = regexp.MustCompile(spec)
+	regex = regexp.MustCompile(pattern)
 
 	return
 }
 
 // Rule is the representation of a URL rule
 type Rule struct {
-	spec      string
+	pattern   string
 	methods   []string
 	regex     *regexp.Regexp
 	variables []string
 }
 
-// Create a new Rule. The rule spec ...
+// Create a new Rule. The rule pattern ...
 // If 'GET' is provided as methods, 'HEAD' is automaticaly added
 // to the new rule.
-func NewRule(spec string, methods ...string) *Rule {
-	regex, variables := parseRuleSpec(spec)
+func NewRule(pattern string, methods ...string) *Rule {
+	regex, variables := parseRulePattern(pattern)
 
 	verbs := map[string]bool{}
 	ms := []string{}
@@ -74,7 +74,7 @@ func NewRule(spec string, methods ...string) *Rule {
 		ms = []string{"HEAD", "GET"}
 	}
 
-	return &Rule{spec, ms, regex, variables}
+	return &Rule{pattern, ms, regex, variables}
 }
 
 // Match given path and return named variables.
@@ -125,17 +125,17 @@ type RouteList []Route
 
 // Len is required by sort.Interface.
 func (rl RouteList) Len() int {
-    return len(rl)
+	return len(rl)
 }
 
 // Less is required by sort.Interface.
 func (rl RouteList) Less(i, j int) bool {
-    return rl[i].rule.spec < rl[j].rule.spec
+	return rl[i].rule.pattern < rl[j].rule.pattern
 }
 
 // Swap is required by sort.Interface.
 func (rl RouteList) Swap(i, j int) {
-    rl[i].rule.spec, rl[j].rule.spec = rl[j].rule.spec, rl[i].rule.spec
+	rl[i].rule.pattern, rl[j].rule.pattern = rl[j].rule.pattern, rl[i].rule.pattern
 }
 
 // A Router dispatches HTTP requests to handlers.
@@ -152,8 +152,8 @@ func NewRouter() Router {
 }
 
 // Add a route to this router.
-func (r *Router) AddRoute(spec string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
-	rule := *NewRule(spec, methods...)
+func (r *Router) AddRoute(pattern string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
+	rule := *NewRule(pattern, methods...)
 	route := Route{rule, handler}
 
 	r.routes = append(r.routes, route)

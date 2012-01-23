@@ -5,18 +5,18 @@ import (
 	"testing"
 )
 
-func TestStaticRuleSpec(t *testing.T) {
-	spec := "/test"
-	rule := NewRule(spec)
+func TestStaticRulePattern(t *testing.T) {
+	pattern := "/test"
+	rule := NewRule(pattern)
 
-	if rule.spec != spec {
-		t.Errorf("Got Rule.spec %v, expected %v", rule.spec, spec)
+	if rule.pattern != pattern {
+		t.Errorf("Got Rule.pattern %v, expected %v", rule.pattern, pattern)
 	}
 }
 
 func TestStaticRuleHeadInjection(t *testing.T) {
-	spec := "/test"
-	rule := NewRule(spec)
+	pattern := "/test"
+	rule := NewRule(pattern)
 
 	if l := len(rule.methods); l != 2 {
 		t.Errorf("Got Rule.methods of length %v, expected 2", l)
@@ -32,8 +32,8 @@ func TestStaticRuleHeadInjection(t *testing.T) {
 }
 
 func TestStaticRuleWithMethods(t *testing.T) {
-	spec := "/test"
-	rule := NewRule(spec, "GET", "PUT", "POST", "DELETE")
+	pattern := "/test"
+	rule := NewRule(pattern, "GET", "PUT", "POST", "DELETE")
 	methods := map[string]bool{
 		"HEAD":   true,
 		"GET":    true,
@@ -49,12 +49,12 @@ func TestStaticRuleWithMethods(t *testing.T) {
 	}
 }
 
-func TestDynamicRuleSpec(t *testing.T) {
-	spec := "/test/<foo>/<bar>"
+func TestDynamicRulePattern(t *testing.T) {
+	pattern := "/test/<foo>/<bar>"
 	names := []string{"foo", "bar"}
 	values := map[string]string{"foo": "baz", "bar": "qux"}
 	regex := ("/test/" + NameGroup + "/" + NameGroup)
-	rule := NewRule(spec)
+	rule := NewRule(pattern)
 
 	if vl, nl := len(rule.variables), len(names); vl != nl {
 		t.Logf("Got %v variable names, expected %v.", vl, nl)
