@@ -43,7 +43,7 @@ func TestStaticRuleWithMethods(t *testing.T) {
 	}
 
 	for _, method := range rule.methods {
-		if _, found := methods[method]; found != true {
+		if _, found := methods[method]; !found {
 			t.Errorf("Got unexpected method '%v'", method)
 		}
 	}
@@ -120,7 +120,7 @@ func TestDynamicRouter(t *testing.T) {
 	vs, m := router.Match(path, "GET")
 
 	if !m {
-		t.Logf("Expected '' to match.", path)
+		t.Logf("Expected '%v' to match.", path)
 		t.FailNow()
 	}
 
