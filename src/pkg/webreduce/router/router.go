@@ -14,12 +14,12 @@ const (
 	NamePattern = StartToken + NameGroup + EndToken
 )
 
-// the regular expression to extract variable names from rule patterns
+// the regular expression to extract arg names from rule patterns
 var ruleRegex *regexp.Regexp = regexp.MustCompile(NamePattern)
 
 // parses a rule pattern in the form /foo/<bar> where 'bar' is the name of a
-// variable. It returns a regex.Regexp for extraction of variables and
-// the list of names for those variables
+// arg. It returns a regex.Regexp for extraction of args and
+// the list of names for those args
 func parseRulePattern(pattern string) (regex *regexp.Regexp, vs []string) {
 	matches := ruleRegex.FindAllStringSubmatch(pattern, -1)
 
@@ -43,14 +43,14 @@ type Rule struct {
 	pattern   string
 	methods   []string
 	regex     *regexp.Regexp
-	variables []string
+	args []string
 }
 
 // Create a new Rule. The rule pattern ...
 // If 'GET' is provided as methods, 'HEAD' is automaticaly added
 // to the new rule.
 func NewRule(pattern string, methods ...string) *Rule {
-	regex, variables := parseRulePattern(pattern)
+	regex, args := parseRulePattern(pattern)
 
 	verbs := map[string]bool{}
 	ms := []string{}
@@ -74,11 +74,11 @@ func NewRule(pattern string, methods ...string) *Rule {
 		ms = []string{"HEAD", "GET"}
 	}
 
-	return &Rule{pattern, ms, regex, variables}
+	return &Rule{pattern, ms, regex, args}
 }
 
-// Match given path and return named variables.
-func (r *Rule) Match(pattern string, method string) (variables map[string]string, match bool) {
+// Match given path and return named args.
+func (r *Rule) Match(pattern string, method string) (args map[string]string, match bool) {
 	for _, m := range r.methods {
 		if m == method {
 			match = true
@@ -101,9 +101,9 @@ func (r *Rule) Match(pattern string, method string) (variables map[string]string
 		return
 	}
 
-	variables = map[string]string{}
+	args = map[string]string{}
 	for i, v := range values[1:] {
-		variables[r.variables[i]] = v
+		args[r.args[i]] = v
 	}
 
 	return
@@ -116,7 +116,7 @@ type Route struct {
 }
 
 // Match given pattern. Documented in Rule.Match
-func (r *Route) Match(pattern string, method string) (variables map[string]string, match bool) {
+func (r *Route) Match(pattern string, method string) (args map[string]string, match bool) {
 	return r.rule.Match(pattern, method)
 }
 
@@ -135,7 +135,7 @@ func (rl RouteList) Less(i, j int) bool {
 
 // Swap is required by sort.Interface.
 func (rl RouteList) Swap(i, j int) {
-	rl[i].rule.pattern, rl[j].rule.pattern = rl[j].rule.pattern, rl[i].rule.pattern
+	rl[i], rl[j] = rl[j], rl[i]
 }
 
 // A Router dispatches HTTP requests to handlers.
@@ -160,15 +160,15 @@ func (r *Router) AddRoute(pattern string, handler func(http.ResponseWriter, *htt
 }
 
 // Match given pattern. Documented in Rule.Match
-func (r *Router) Match(pattern string, method string) (variables map[string]string, match bool) {
+func (r *Router) Match(pattern string, method string) (args map[string]string, match bool) {
 	if !r.sorted {
 		sort.Sort(r.routes)
 		r.sorted = true
 	}
 
 	for _, route := range r.routes {
-		if variables, matched := route.Match(pattern, method); matched {
-			return variables, matched
+		if args, matched := route.Match(pattern, method); matched {
+			return args, matched
 		}
 	}
 	return

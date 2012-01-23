@@ -56,14 +56,14 @@ func TestDynamicRulePattern(t *testing.T) {
 	regex := ("/test/" + NameGroup + "/" + NameGroup)
 	rule := NewRule(pattern)
 
-	if vl, nl := len(rule.variables), len(names); vl != nl {
-		t.Logf("Got %v variable names, expected %v.", vl, nl)
+	if vl, nl := len(rule.args), len(names); vl != nl {
+		t.Logf("Got %v arg names, expected %v.", vl, nl)
 		t.FailNow()
 	}
 
 	for idx, name := range names {
-		if v := rule.variables[idx]; v != name {
-			t.Errorf("Got variable name '%v' on position %v, expected %v.", v, idx, name)
+		if v := rule.args[idx]; v != name {
+			t.Errorf("Got arg name '%v' on position %v, expected %v.", v, idx, name)
 		}
 	}
 
@@ -71,20 +71,20 @@ func TestDynamicRulePattern(t *testing.T) {
 		t.Errorf("Got Rule.regex %v, expected %v", rule.regex, regex)
 	}
 
-	variables, match := rule.Match("/test/"+values["foo"]+"/"+values["bar"], "GET")
+	args, match := rule.Match("/test/"+values["foo"]+"/"+values["bar"], "GET")
 	if !match {
 		t.Logf("Got match %v, expected %v", match, true)
 		t.FailNow()
 	}
 
 	for _, name := range names {
-		value, found := variables[name]
+		value, found := args[name]
 		if found {
 			if v := values[name]; value != v {
 				t.Errorf("Got %v for name '%v', expected %v", value, name, v)
 			}
 		} else {
-			t.Errorf("Expected variable '%v' to be in variables.", name)
+			t.Errorf("Expected arg '%v' to be in args.", name)
 		}
 	}
 }
@@ -127,7 +127,7 @@ func TestDynamicRouter(t *testing.T) {
 	for k, v := range map[string]string{"foo": "baz", "bar": "qux"} {
 		val, found := vs[k]
 		if !found {
-			t.Errorf("Expected variable '%v' to be in variables.", v)
+			t.Errorf("Expected arg '%v' to be in args.", v)
 		} else if val != v {
 			t.Errorf("Got '%v' for %v, expected '%v'", val, k, v)
 		}
