@@ -25,7 +25,7 @@ func TestStaticRuleHeadInjection(t *testing.T) {
 	methods := map[string]bool{"GET": true, "HEAD": true}
 
 	for _, method := range rule.methods {
-		if _, found := methods[method]; found != true {
+		if _, found := methods[method]; !found {
 			t.Errorf("Got unexpected method '%v'", method)
 		}
 	}
