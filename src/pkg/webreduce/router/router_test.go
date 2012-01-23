@@ -118,7 +118,6 @@ func TestDynamicRouter(t *testing.T) {
 	router := NewRouter()
 	router.AddRoute(pattern, Handler)
 	vs, m := router.Match(path, "GET")
-	t.Logf("XXX %v", vs)
 
 	if !m {
 		t.Logf("Expected '' to match.", path)
