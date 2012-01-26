@@ -53,32 +53,38 @@ Create multiple destinations or sources with the help of a comma-sperated list:
 
 ### Languages
 
-At the time, only JavaScript is supported. The design allows adding new interpreters very easily, though.
+At the time, only LUA is supported. The design allows adding new interpreters very easily, though.
 
-### Persistent Objects
+The supplied code is treated as a function and has to comply to a small set of assumptions:
 
-Every behaviour has the ability so save data which is kept across invocations. The method of manipulating said data might differ between languages.
+* The first argument is the data which is to be processed
+* The second argument is the current persistent state object (see below) 
+* The returned value is the new persistent state object
 
-#### Javascript
+Every behaviour has the ability so save data which is kept across invocations. The engine is agnostic about what format the persistent data has.
 
-``` javascript
-window.WebReduce = {
-  // Returns the current persistent object
-  getPersistentObject = function() {
-    // native
-    return obj;
-  },
+The engine will execute multiple instance of the behaviour in parallel on different datasets to improve performance. By simple collision detection on the state object a behaviour may be re-run.
+A machine learning algorithm will reduce (or increase) the number of instances to avoid collisions.
 
-  // Sets the persistent object
-  setPersistentObject = function(obj) {
-    // native
-  },
+A behaviour can emit (multiple) data during execution which is added to the output queue.
 
-  // Deep-merges `obj` into the persistent object
-  mergePersistentObject = function(obj) {
-    // native
-  }
-};
+#### Lua
+
+Example script:
+
+```Lua
+-- Get parameters
+local params = {...}; 
+local data = params[0];
+local state = params[1];
+
+-- Emit some data
+emit(data+1);
+-- Emit some more data
+emit(data-1)
+
+-- Return the new state
+return state;
 ```
 
 ## Development
