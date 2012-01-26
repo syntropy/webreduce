@@ -40,10 +40,10 @@ func parseRulePattern(pattern string) (regex *regexp.Regexp, vs []string) {
 
 // Rule is the representation of a URL rule
 type Rule struct {
-	pattern   string
-	methods   []string
-	regex     *regexp.Regexp
-	args []string
+	pattern string
+	methods []string
+	regex   *regexp.Regexp
+	args    []string
 }
 
 // Create a new Rule. The rule pattern ...
