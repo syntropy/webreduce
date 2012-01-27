@@ -161,7 +161,7 @@ func (r *Router) AddRoute(pattern string, handler func(map[string]string, http.R
 }
 
 // Match given pattern. Documented in Rule.Match
-func (r *Router) Match(pattern string, method string) (args map[string]string, match bool) {
+func (r *Router) Match(pattern string, method string) (handler func(map[string]string, http.ResponseWriter, *http.Request), args map[string]string, match bool) {
 	if !r.sorted {
 		sort.Sort(r.routes)
 		r.sorted = true
@@ -169,12 +169,13 @@ func (r *Router) Match(pattern string, method string) (args map[string]string, m
 
 	for _, route := range r.routes {
 		if args, matched := route.Match(pattern, method); matched {
-			return args, matched
+			return route.handler, args, matched
 		}
 	}
 	return
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	panic("Not Implemented")
+	//args, matched := r.Match(req.Path, req.Method)
+
 }
