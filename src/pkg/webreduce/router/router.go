@@ -112,7 +112,7 @@ func (r *Rule) Match(pattern string, method string) (args map[string]string, mat
 // A Route associates a Rule and a handler function
 type Route struct {
 	rule    Rule
-	handler func(http.ResponseWriter, *http.Request)
+	handler func(map[string]string, http.ResponseWriter, *http.Request)
 }
 
 // Match given pattern. Documented in Rule.Match
@@ -153,7 +153,7 @@ func NewRouter(prefix string) Router {
 }
 
 // Add a route to this router.
-func (r *Router) AddRoute(pattern string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
+func (r *Router) AddRoute(pattern string, handler func(map[string]string, http.ResponseWriter, *http.Request), methods ...string) {
 	rule := *NewRule(r.prefix + pattern, methods...)
 	route := Route{rule, handler}
 

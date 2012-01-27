@@ -89,7 +89,7 @@ func TestDynamicRulePattern(t *testing.T) {
 	}
 }
 
-func Handler(w http.ResponseWriter, req *http.Request) {}
+func Handler(ctx map[string]string, w http.ResponseWriter, req *http.Request) {}
 
 func TestStaticRouter(t *testing.T) {
 	prefix := "/qux"
