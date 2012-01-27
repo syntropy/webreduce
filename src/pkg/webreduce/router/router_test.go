@@ -92,11 +92,12 @@ func TestDynamicRulePattern(t *testing.T) {
 func Handler(w http.ResponseWriter, req *http.Request) {}
 
 func TestStaticRouter(t *testing.T) {
-	router := NewRouter()
+	prefix := "/qux"
+	router := NewRouter(prefix)
 	patterns := []string{"/foo", "/bar"}
 
 	for _, pattern := range patterns {
-		if _, m := router.Match(pattern, "GET"); m {
+		if _, m := router.Match(prefix + pattern, "GET"); m {
 			t.Errorf("Pattern '%v' shouldn't match", pattern)
 		}
 	}
@@ -106,7 +107,7 @@ func TestStaticRouter(t *testing.T) {
 	}
 
 	for _, pattern := range patterns {
-		if _, m := router.Match(pattern, "GET"); !m {
+		if _, m := router.Match(prefix + pattern, "GET"); !m {
 			t.Errorf("Pattern '%v' should match", pattern)
 		}
 	}
@@ -115,7 +116,7 @@ func TestStaticRouter(t *testing.T) {
 func TestDynamicRouter(t *testing.T) {
 	pattern := "/<foo>/<bar>"
 	path := "/baz/qux"
-	router := NewRouter()
+	router := NewRouter("")
 	router.AddRoute(pattern, Handler)
 	vs, m := router.Match(path, "GET")
 

@@ -140,20 +140,21 @@ func (rl RouteList) Swap(i, j int) {
 
 // A Router dispatches HTTP requests to handlers.
 type Router struct {
+	prefix string
 	routes RouteList
 	sorted bool
 }
 
 // Create a new Router
-func NewRouter() Router {
-	r := Router{}
+func NewRouter(prefix string) Router {
+	r := Router{prefix: prefix}
 
 	return r
 }
 
 // Add a route to this router.
 func (r *Router) AddRoute(pattern string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
-	rule := *NewRule(pattern, methods...)
+	rule := *NewRule(r.prefix + pattern, methods...)
 	route := Route{rule, handler}
 
 	r.routes = append(r.routes, route)
