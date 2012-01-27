@@ -175,7 +175,10 @@ func (r *Router) Match(pattern string, method string) (handler func(map[string]s
 	return
 }
 
+// Implements http.Handler
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	//args, matched := r.Match(req.Path, req.Method)
-
+	if handler, args, matched := r.Match(req.URL.Path, req.Method); matched {
+		handler(args, w, req)
+	}
+	http.NotFound(w, req)
 }
