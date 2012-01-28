@@ -3,12 +3,12 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"interpreter/lua"
 	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
-	"interpreter/lua"
 	"net/http"
-	"fmt"
 )
 
 // IncomingAgents represent a persistable behaviour that collect and/or emit data
@@ -179,7 +179,7 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 	}
 
 	lctx := lua.New()
-	lctx.RegisterEmitCallback(func(data []byte){fmt.Printf("EMIT: %v\n", data)})
+	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", data) })
 
 	fn, err := lctx.Eval("local params = {...}; emit(params[1]);")
 	if err != nil {
