@@ -120,6 +120,11 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 		return
 	}
 
+	if _, err := lua.New().Eval(data.Code); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	col := api.dbsession.Copy().DB(api.config["db/name"]).C(api.config["db/collection/name"])
 	selector := bson.M{"name": name}
 	agent := &Agent{Name: name, Language: data.Language, Code: data.Code}
@@ -174,13 +179,14 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 	}
 
 	lctx := lua.New()
+	lctx.RegisterEmitCallback(func(data []byte){fmt.Printf("EMIT: %v\n", data)})
+
 	fn, err := lctx.Eval("local params = {...}; emit(params[1]);")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	lctx.RegisterEmitCallback(func(data []byte){fmt.Printf("EMIT: %v\n", data)})
 	fn(data, []byte{})
 
 	w.WriteHeader(http.StatusAccepted)
