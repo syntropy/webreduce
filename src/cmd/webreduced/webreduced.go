@@ -1,0 +1,29 @@
+package main
+
+import (
+	"net/http"
+	"webreduce/api"
+	"webreduce/router"
+)
+
+func main() {
+	cfg := map[string]string{
+		"db/url":             "localhost",
+		"db/name":            "webreduce",
+		"db/collection/name": "agents",
+	}
+
+	as, err := api.NewAgentCollectionApi(cfg)
+	if err != nil {
+		panic(err)
+	}
+	defer as.Close()
+
+	r := router.NewRouter("/sinks")
+	r.AddRoute("", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetList(ctx, w, r) }, "GET")
+	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetAgent(ctx, w, r) }, "GET")
+	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.PutAgent(ctx, w, r) }, "PUT")
+
+	http.Handle("/", &r)
+	http.ListenAndServe(":8080", nil)
+}

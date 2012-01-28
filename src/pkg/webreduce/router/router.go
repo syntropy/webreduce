@@ -24,7 +24,7 @@ func parseRulePattern(pattern string) (regex *regexp.Regexp, vs []string) {
 	matches := ruleRegex.FindAllStringSubmatch(pattern, -1)
 
 	if matches == nil {
-		regex = regexp.MustCompile(regexp.QuoteMeta(pattern))
+		regex = regexp.MustCompile("^" + regexp.QuoteMeta(pattern) + "$")
 		return
 	}
 
@@ -33,7 +33,7 @@ func parseRulePattern(pattern string) (regex *regexp.Regexp, vs []string) {
 		pattern = regexp.MustCompile(match[0]).ReplaceAllString(pattern, "([a-z]+)")
 	}
 
-	regex = regexp.MustCompile(pattern)
+	regex = regexp.MustCompile("^" + pattern + "$")
 
 	return
 }
@@ -112,7 +112,7 @@ func (r *Rule) Match(pattern string, method string) (args map[string]string, mat
 // A Route associates a Rule and a handler function
 type Route struct {
 	rule    Rule
-	handler func(http.ResponseWriter, *http.Request)
+	handler func(map[string]string, http.ResponseWriter, *http.Request)
 }
 
 // Match given pattern. Documented in Rule.Match
@@ -140,27 +140,28 @@ func (rl RouteList) Swap(i, j int) {
 
 // A Router dispatches HTTP requests to handlers.
 type Router struct {
+	prefix string
 	routes RouteList
 	sorted bool
 }
 
 // Create a new Router
-func NewRouter() Router {
-	r := Router{}
+func NewRouter(prefix string) Router {
+	r := Router{prefix: prefix}
 
 	return r
 }
 
 // Add a route to this router.
-func (r *Router) AddRoute(pattern string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
-	rule := *NewRule(pattern, methods...)
+func (r *Router) AddRoute(pattern string, handler func(map[string]string, http.ResponseWriter, *http.Request), methods ...string) {
+	rule := *NewRule(r.prefix+pattern, methods...)
 	route := Route{rule, handler}
 
 	r.routes = append(r.routes, route)
 }
 
 // Match given pattern. Documented in Rule.Match
-func (r *Router) Match(pattern string, method string) (args map[string]string, match bool) {
+func (r *Router) Match(pattern string, method string) (handler func(map[string]string, http.ResponseWriter, *http.Request), args map[string]string, match bool) {
 	if !r.sorted {
 		sort.Sort(r.routes)
 		r.sorted = true
@@ -168,12 +169,19 @@ func (r *Router) Match(pattern string, method string) (args map[string]string, m
 
 	for _, route := range r.routes {
 		if args, matched := route.Match(pattern, method); matched {
-			return args, matched
+			return route.handler, args, matched
 		}
 	}
 	return
 }
 
+// Implements http.Handler
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	panic("Not Implemented")
+	handler, args, matched := r.Match(req.URL.Path, req.Method)
+	if !matched {
+		http.NotFound(w, req)
+		return
+	}
+
+	handler(args, w, req)
 }
