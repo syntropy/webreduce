@@ -3,6 +3,9 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"interpreter/lua"
+	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
@@ -10,15 +13,15 @@ import (
 
 // IncomingAgents represent a persistable behaviour that collect and/or emit data
 type IncomingAgent struct {
-	Language string
-	Code string
+	Language string `json:"language"`
+	Code     string `json:"code"`
 }
 
 // Agents represent a persistable behaviour that collect and/or emit data
 type Agent struct {
-	Name	 string
-	Language string
-	Code     string
+	Name     string `json:"name"`
+	Language string `json:"language"`
+	Code     string `json:"code"`
 }
 
 // The API for agent collections
@@ -89,8 +92,12 @@ func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWri
 	}
 
 	res := make(map[string]interface{})
-	res["Count"] = count
-	res["Result"] = list
+	res["count"] = count
+	if count == 0 {
+		res["result"] = []Agent{}
+	} else {
+		res["result"] = list
+	}
 
 	encoder := json.NewEncoder(w)
 	encoder.Encode(res)
@@ -113,6 +120,11 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 		return
 	}
 
+	if _, err := lua.New().Eval(data.Code); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	col := api.dbsession.Copy().DB(api.config["db/name"]).C(api.config["db/collection/name"])
 	selector := bson.M{"name": name}
 	agent := &Agent{Name: name, Language: data.Language, Code: data.Code}
@@ -120,6 +132,8 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // Get an agent by name
@@ -142,4 +156,38 @@ func (api *AgentCollectionApi) GetAgent(ctx map[string]string, w http.ResponseWr
 
 	encoder := json.NewEncoder(w)
 	encoder.Encode(agent)
+}
+
+// Post data to an agent
+func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx["agent"]
+	if !found {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var agent *Agent
+	if err := api.Collection().Find(bson.M{"name": name}).One(&agent); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	lctx := lua.New()
+	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", data) })
+
+	fn, err := lctx.Eval("local params = {...}; emit(params[1]);")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	fn(data, []byte{})
+
+	w.WriteHeader(http.StatusAccepted)
 }

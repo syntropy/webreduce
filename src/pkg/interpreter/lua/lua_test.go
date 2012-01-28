@@ -41,5 +41,3 @@ func TestInvalidCode(t *testing.T) {
 		t.Fatalf("Could compile code")
 	}
 }
-
-
