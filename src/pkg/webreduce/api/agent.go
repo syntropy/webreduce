@@ -93,7 +93,11 @@ func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWri
 
 	res := make(map[string]interface{})
 	res["count"] = count
-	res["result"] = list
+	if count == 0 {
+		res["result"] = []Agent{}
+	} else {
+		res["result"] = list
+	}
 
 	encoder := json.NewEncoder(w)
 	encoder.Encode(res)
