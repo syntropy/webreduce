@@ -23,13 +23,13 @@ func TestEmitting(t *testing.T) {
 
 func TestDataPassing(t *testing.T) {
 	l := New()
-	f, e := l.Eval("local params={...}; return params[1]")
+	f, e := l.Eval("local params={...}; return params[1] .. params[2];")
 	if e != nil {
 		t.Fatalf("Could not compile code: %s", e)
 	}
-	s := f([]byte("data"), []byte{})
-	if string(s) != "data" {
-		t.Fatalf("Returned data was not \"data\" but \"%s\"", string(s))
+	data, state := "data", "state"
+	s := f([]byte(data), []byte(state))
+	if string(s) != data+state {
+		t.Fatalf("Returned data was not \"%s\" but \"%s\"", data+state, string(s))
 	}
 }
-

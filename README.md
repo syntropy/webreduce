@@ -75,13 +75,13 @@ Example script:
 ```Lua
 -- Get parameters
 local params = {...}; 
-local data = params[0];
-local state = params[1];
+local data = params[1];
+local state = params[2];
 
 -- Emit some data
-emit(data+1);
+emit(data);
 -- Emit some more data
-emit(data-1)
+emit(data)
 
 -- Return the new state
 return state;

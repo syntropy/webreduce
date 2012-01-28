@@ -15,7 +15,7 @@ var (
 )
 
 func New() *LuaInterpreter {
-	return &LuaInterpreter {
+	return &LuaInterpreter{
 		cbs: make([]interpreter.EmitCallback, 0),
 	}
 }
