@@ -6,17 +6,12 @@ hiro.module('Agent', {
     h.expect(2);
     h.pause();
 
-    jQuery.ajax({
-      url: '/agents',
-      type: 'get',
-      dataType: 'json',
-      complete: function(res) {
-        var payload = JSON.parse(res.responseText);
-        h.resume();
+    GET({ url: '/agents' }, function(res) {
+      var payload = JSON.parse(res.responseText);
+      h.resume();
 
-        h.assertEqual(res.status, 200);
-        h.assertEqual(payload.result.length, payload.count);
-      }
+      h.assertEqual(res.status, 200);
+      h.assertEqual(payload.result.length, payload.count);
     });
   },
   "test PUT and GET agent": function() {
@@ -28,32 +23,17 @@ hiro.module('Agent', {
     h.expect(5);
     h.pause();
 
-    jQuery.ajax({
-      url: url,
-      type: 'put',
-      dataType: 'json',
-      contentType: 'application/json',
-      data: JSON.stringify(data),
-      processData: false,
-      complete: function(res) {
-        h.assertEqual(res.status, 204);
+    PUT({ url: url, data: JSON.stringify(data) }, function(res) {
+      h.assertEqual(res.status, 204);
 
-        jQuery.ajax({
-          url: url,
-          type: 'get',
-          dataType: 'json',
-          complete: function(res) {
-            var payload = JSON.parse(res.responseText);
+      GET({ url: url }, function(res) {
+        h.assertEqual(res.status, 200);
+        h.assertEqual(res.body.name, name);
+        h.assertEqual(res.body.code, data.code);
+        h.assertEqual(res.body.language, data.language);
 
-            h.assertEqual(res.status, 200);
-            h.assertEqual(payload.name, name);
-            h.assertEqual(payload.code, data.code);
-            h.assertEqual(payload.language, data.language);
-
-            h.resume();
-          }
-        });
-      }
+        h.resume();
+      });
     });
   }
 });
