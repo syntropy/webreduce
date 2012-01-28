@@ -11,12 +11,12 @@ import (
 // IncomingAgents represent a persistable behaviour that collect and/or emit data
 type IncomingAgent struct {
 	Language string `json:"language"`
-	Code string     `json:"code"`
+	Code     string `json:"code"`
 }
 
 // Agents represent a persistable behaviour that collect and/or emit data
 type Agent struct {
-	Name	 string `json:"name"`
+	Name     string `json:"name"`
 	Language string `json:"language"`
 	Code     string `json:"code"`
 }
@@ -120,6 +120,8 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // Get an agent by name
