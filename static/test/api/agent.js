@@ -69,7 +69,6 @@ hiro.module('Agent', {
     h.pause();
 
     PUT({ url: agent.url, data: { code: 'that is no code, no good', language: agent.language } }, function(res) {
-      console.log(res)
       h.assertEqual(res.status, 400);
 
       h.resume()
