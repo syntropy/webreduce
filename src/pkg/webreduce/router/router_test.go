@@ -53,7 +53,7 @@ func TestDynamicRulePattern(t *testing.T) {
 	pattern := "/test/<foo>/<bar>"
 	names := []string{"foo", "bar"}
 	values := map[string]string{"foo": "baz", "bar": "qux"}
-	regex := ("/test/" + NameGroup + "/" + NameGroup)
+	regex := ("^/test/" + NameGroup + "/" + NameGroup + "$")
 	rule := NewRule(pattern)
 
 	if vl, nl := len(rule.args), len(names); vl != nl {
