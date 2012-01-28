@@ -8,11 +8,16 @@ import (
 
 func main() {
 	cfg := map[string]string{
-		"db/name":       "webreduce",
-		"db/collection": "sinks",
+		"db/url":             "localhost",
+		"db/name":            "webreduce",
+		"db/collection/name": "agents",
 	}
 
-	as := api.AgentCollectionApi{cfg}
+	as, err := api.NewAgentCollectionApi(cfg)
+	if err != nil {
+		panic(err)
+	}
+	defer as.Close()
 
 	p := "/sinks"
 	r := router.NewRouter(p)
