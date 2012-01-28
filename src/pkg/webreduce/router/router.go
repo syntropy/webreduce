@@ -24,7 +24,7 @@ func parseRulePattern(pattern string) (regex *regexp.Regexp, vs []string) {
 	matches := ruleRegex.FindAllStringSubmatch(pattern, -1)
 
 	if matches == nil {
-		regex = regexp.MustCompile(regexp.QuoteMeta(pattern))
+		regex = regexp.MustCompile("^" + regexp.QuoteMeta(pattern) + "$")
 		return
 	}
 
@@ -33,7 +33,7 @@ func parseRulePattern(pattern string) (regex *regexp.Regexp, vs []string) {
 		pattern = regexp.MustCompile(match[0]).ReplaceAllString(pattern, "([a-z]+)")
 	}
 
-	regex = regexp.MustCompile(pattern)
+	regex = regexp.MustCompile("^" + pattern + "$")
 
 	return
 }

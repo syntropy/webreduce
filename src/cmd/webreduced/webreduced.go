@@ -19,10 +19,11 @@ func main() {
 	}
 	defer as.Close()
 
-	p := "/sinks"
-	r := router.NewRouter(p)
+	r := router.NewRouter("/sinks")
 	r.AddRoute("", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetList(ctx, w, r) }, "GET")
+	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetAgent(ctx, w, r) }, "GET")
+	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.PutAgent(ctx, w, r) }, "PUT")
 
-	http.Handle(p, &r)
+	http.Handle("/", &r)
 	http.ListenAndServe(":8080", nil)
 }
