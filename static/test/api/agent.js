@@ -62,6 +62,19 @@ hiro.module('Agent', {
       h.resume();
     });
   },
+  "test PUT with invalid code": function(agent) {
+    var h = this;
+
+    h.expect(1);
+    h.pause();
+
+    PUT({ url: agent.url, data: { code: 'that is no code, no good', language: agent.language } }, function(res) {
+      console.log(res)
+      h.assertEqual(res.status, 400);
+
+      h.resume()
+    });
+  },
   "test POST on missing agent": function() {
     var h = this;
 
