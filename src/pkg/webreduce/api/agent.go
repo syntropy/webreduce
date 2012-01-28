@@ -10,15 +10,15 @@ import (
 
 // IncomingAgents represent a persistable behaviour that collect and/or emit data
 type IncomingAgent struct {
-	Language string
-	Code string
+	Language string `json:"language"`
+	Code string     `json:"code"`
 }
 
 // Agents represent a persistable behaviour that collect and/or emit data
 type Agent struct {
-	Name	 string
-	Language string
-	Code     string
+	Name	 string `json:"name"`
+	Language string `json:"language"`
+	Code     string `json:"code"`
 }
 
 // The API for agent collections
@@ -89,8 +89,8 @@ func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWri
 	}
 
 	res := make(map[string]interface{})
-	res["Count"] = count
-	res["Result"] = list
+	res["count"] = count
+	res["result"] = list
 
 	encoder := json.NewEncoder(w)
 	encoder.Encode(res)
