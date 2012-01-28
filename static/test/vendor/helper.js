@@ -8,7 +8,7 @@ function req(cb, opts) {
     contentType: 'application/json',
     processData: false,
     complete: function(res) {
-      if (res.responseText.length) {
+      if (res.status < 300 && res.responseText.length) {
         res.body = JSON.parse(res.responseText);
       } else {
         res.body = res.responseText;
@@ -17,6 +17,10 @@ function req(cb, opts) {
       cb(res);
     }
   }, opts);
+
+  if (opts.data) {
+    opts.data = JSON.stringify(opts.data);
+  }
 
   jQuery.ajax(opts);
 }
