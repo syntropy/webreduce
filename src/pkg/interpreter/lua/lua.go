@@ -15,7 +15,7 @@ var (
 )
 
 func New() *LuaInterpreter {
-	return &LuaInterpreter {
+	return &LuaInterpreter{
 		cbs: make([]interpreter.EmitCallback, 0),
 	}
 }
@@ -30,8 +30,8 @@ func (l *LuaInterpreter) Eval(code string) (interpreter.Interpretation, error) {
 		}
 		return 0
 	})
-	s.LoadString(code)
-	if s.IsNil(-1) {
+	errc := s.LoadString(code)
+	if errc != 0 || s.IsNil(-1) {
 		return nil, EInvalidCode
 	}
 	return func(data, state []byte) []byte {
