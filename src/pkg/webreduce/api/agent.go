@@ -8,6 +8,12 @@ import (
 	"net/http"
 )
 
+// IncomingAgents represent a persistable behaviour that collect and/or emit data
+type IncomingAgent struct {
+	Language string
+	Code string
+}
+
 // Agents represent a persistable behaviour that collect and/or emit data
 type Agent struct {
 	Name	 string
@@ -98,15 +104,21 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 		return
 	}
 
-	lang := "lua"
-	code := ""
+	decoder := json.NewDecoder(r.Body)
+
+	data := &IncomingAgent{}
+	err := decoder.Decode(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	col := api.dbsession.Copy().DB(api.config["db/name"]).C(api.config["db/collection/name"])
 	selector := bson.M{"name": name}
-	agent := &Agent{Name: name, Language: lang, Code: code}
-	_, err := col.Upsert(selector, agent)
-	if err != nil {
+	agent := &Agent{Name: name, Language: data.Language, Code: data.Code}
+	if _, err := col.Upsert(selector, agent); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 }
 
