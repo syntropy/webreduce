@@ -12,4 +12,3 @@ type AgentCollectionApi struct {
 func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Hello, world!\n")
 }
-

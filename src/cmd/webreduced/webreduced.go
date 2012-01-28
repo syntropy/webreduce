@@ -1,14 +1,14 @@
 package main
 
 import (
-	"webreduce/router"
-	"webreduce/api"
 	"net/http"
+	"webreduce/api"
+	"webreduce/router"
 )
 
 func main() {
 	cfg := map[string]string{
-		"db/name": "webreduce",
+		"db/name":       "webreduce",
 		"db/collection": "sinks",
 	}
 
@@ -16,7 +16,7 @@ func main() {
 
 	p := "/sinks"
 	r := router.NewRouter(p)
-	r.AddRoute("", func(ctx map[string]string, w http.ResponseWriter, r *http.Request){as.GetList(ctx, w, r)}, "GET")
+	r.AddRoute("", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetList(ctx, w, r) }, "GET")
 
 	http.Handle(p, &r)
 	http.ListenAndServe(":8080", nil)

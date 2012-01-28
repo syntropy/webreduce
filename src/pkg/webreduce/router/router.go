@@ -154,7 +154,7 @@ func NewRouter(prefix string) Router {
 
 // Add a route to this router.
 func (r *Router) AddRoute(pattern string, handler func(map[string]string, http.ResponseWriter, *http.Request), methods ...string) {
-	rule := *NewRule(r.prefix + pattern, methods...)
+	rule := *NewRule(r.prefix+pattern, methods...)
 	route := Route{rule, handler}
 
 	r.routes = append(r.routes, route)

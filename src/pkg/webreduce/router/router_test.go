@@ -97,7 +97,7 @@ func TestStaticRouter(t *testing.T) {
 	patterns := []string{"/foo", "/bar"}
 
 	for _, pattern := range patterns {
-		if _, _, m := router.Match(prefix + pattern, "GET"); m {
+		if _, _, m := router.Match(prefix+pattern, "GET"); m {
 			t.Errorf("Pattern '%v' shouldn't match", pattern)
 		}
 	}
@@ -107,7 +107,7 @@ func TestStaticRouter(t *testing.T) {
 	}
 
 	for _, pattern := range patterns {
-		if _, _, m := router.Match(prefix + pattern, "GET"); !m {
+		if _, _, m := router.Match(prefix+pattern, "GET"); !m {
 			t.Errorf("Pattern '%v' should match", pattern)
 		}
 	}
