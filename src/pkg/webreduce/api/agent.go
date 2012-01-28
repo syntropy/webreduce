@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
@@ -144,4 +145,27 @@ func (api *AgentCollectionApi) GetAgent(ctx map[string]string, w http.ResponseWr
 
 	encoder := json.NewEncoder(w)
 	encoder.Encode(agent)
+}
+
+// Post data to an agent
+func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx["agent"]
+	if !found {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var agent *Agent
+	if err := api.Collection().Find(bson.M{"name": name}).One(&agent); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	_, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
 }
