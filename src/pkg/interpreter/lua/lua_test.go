@@ -33,3 +33,13 @@ func TestDataPassing(t *testing.T) {
 		t.Fatalf("Returned data was not \"%s\" but \"%s\"", data+state, string(s))
 	}
 }
+
+func TestInvalidCode(t *testing.T) {
+	l := New()
+	_, e := l.Eval("This is not code")
+	if e == nil {
+		t.Fatalf("Could compile code")
+	}
+}
+
+

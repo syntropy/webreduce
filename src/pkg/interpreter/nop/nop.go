@@ -9,7 +9,7 @@ type NopInterpreter struct {
 }
 
 func New() *NopInterpreter {
-	return &NopInterpreter {
+	return &NopInterpreter{
 		cbs: make([]interpreter.EmitCallback, 0),
 	}
 }
