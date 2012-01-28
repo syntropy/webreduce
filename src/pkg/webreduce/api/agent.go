@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
+	"interpreter/lua"
 	"net/http"
+	"fmt"
 )
 
 // IncomingAgents represent a persistable behaviour that collect and/or emit data
@@ -161,11 +163,21 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 		return
 	}
 
-	_, err := ioutil.ReadAll(r.Body)
+	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	lctx := lua.New()
+	fn, err := lctx.Eval("local params = {...}; emit(params[1]);")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	lctx.RegisterEmitCallback(func(data []byte){fmt.Printf("EMIT: %v\n", data)})
+	fn(data, []byte{})
 
 	w.WriteHeader(http.StatusAccepted)
 }
