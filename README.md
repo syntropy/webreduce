@@ -51,6 +51,42 @@ Create multiple destinations or sources with the help of a comma-sperated list:
 
     x-wr-destination: http://lolcathost/sandwich,http://lolcathost/nyan
 
+### Languages
+
+At the time, only LUA is supported. The design allows adding new interpreters very easily, though.
+
+The supplied code is treated as a function and has to comply to a small set of assumptions:
+
+* The first argument is the data which is to be processed
+* The second argument is the current persistent state object (see below) 
+* The returned value is the new persistent state object
+
+Every behaviour has the ability so save data which is kept across invocations. The engine is agnostic about what format the persistent data has.
+
+The engine will execute multiple instance of the behaviour in parallel on different datasets to improve performance. By simple collision detection on the state object a behaviour may be re-run.
+A machine learning algorithm will reduce (or increase) the number of instances to avoid collisions.
+
+A behaviour can emit (multiple) data during execution which is added to the output queue.
+
+#### Lua
+
+Example script:
+
+```Lua
+-- Get parameters
+local params = {...}; 
+local data = params[0];
+local state = params[1];
+
+-- Emit some data
+emit(data+1);
+-- Emit some more data
+emit(data-1)
+
+-- Return the new state
+return state;
+```
+
 ## Development
 
 ### Setup
