@@ -25,5 +25,6 @@ func main() {
 	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.PutAgent(ctx, w, r) }, "PUT")
 
 	http.Handle("/", &r)
+	http.Handle("/test/", http.StripPrefix("/test/", http.FileServer(http.Dir("./static/test"))))
 	http.ListenAndServe(":8080", nil)
 }
