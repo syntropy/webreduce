@@ -19,7 +19,7 @@ func main() {
 	}
 	defer as.Close()
 
-	r := router.NewRouter("/sinks")
+	r := router.NewRouter("/agent")
 	r.AddRoute("", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetList(ctx, w, r) }, "GET")
 	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetAgent(ctx, w, r) }, "GET")
 	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.PutAgent(ctx, w, r) }, "PUT")
