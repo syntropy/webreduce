@@ -4,12 +4,11 @@
     <title>API TEST</title>
     <link rel="stylesheet" href="/test/vendor/hiro.css">
     <script src="/test/vendor/jquery.js"></script>
-    <script src="/test/vendor/ender.js"></script>
     <script src="/test/vendor/hiro.js"></script>
     <script src="/test/vendor/web.js"></script>
     <script src="/test/vendor/helper.js"></script>
   </head>
-  <body onload="hiro.autorun();">
+  <body>
     <h1>API test suite</h1>
     <div id="web">
     </div>
@@ -20,6 +19,9 @@
     <!-- tests -->
     <script src="/test/api/agent.js"></script>
     <script type="text/javascript" charset="utf-8">
+      jQuery(function($) {
+        hiro.autorun();
+      });
     </script>
   </body>
 </html>
