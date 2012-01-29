@@ -11,12 +11,6 @@ import (
 	"net/http"
 )
 
-// IncomingAgents represent a persistable behaviour that collect and/or emit data
-type IncomingAgent struct {
-	Language string `json:"language"`
-	Code     string `json:"code"`
-}
-
 // Agents represent a persistable behaviour that collect and/or emit data
 type Agent struct {
 	Name     string `json:"name"`
@@ -117,7 +111,7 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 
 	decoder := json.NewDecoder(r.Body)
 
-	data := &IncomingAgent{}
+	data := &Agent{}
 	err := decoder.Decode(&data)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
