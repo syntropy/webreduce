@@ -98,7 +98,7 @@ func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWri
 	encoder.Encode(list)
 }
 
-// Put an agents
+// Put a named agent in the collection.
 func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
 	name, found := ctx["agent"]
 	if !found {
@@ -163,11 +163,10 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 		return
 	}
 
-	var agent *Agent
-
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
+	agent := &Agent{}
 	if err := col.Find(bson.M{"name": name}).One(&agent); err != nil {
 		http.NotFound(w, r)
 		return
