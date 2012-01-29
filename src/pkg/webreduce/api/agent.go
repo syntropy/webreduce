@@ -18,6 +18,7 @@ type Agent struct {
 	Code     string `json:"code"`
 }
 
+// Validates the agent.
 func (a *Agent) Valid() bool {
 	if len(a.Name) < 1 {
 		return false
@@ -32,6 +33,20 @@ func (a *Agent) Valid() bool {
 	}
 
 	return true
+}
+
+// Calls the agent with data
+func (a *Agent) Call(data interface{}) (err error) {
+	lctx := lua.New()
+	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", string(data)) })
+
+	fn, err := lctx.Eval(a.Code)
+	if err != nil {
+		return
+	}
+
+	fn(data.([]byte), []byte{})
+	return
 }
 
 // AgentList represents a list of persisted Agents
@@ -193,16 +208,10 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 		return
 	}
 
-	lctx := lua.New()
-	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", string(data)) })
-
-	fn, err := lctx.Eval(agent.Code)
-	if err != nil {
+	if err := agent.Call(data); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	fn(data, []byte{})
 
 	w.WriteHeader(http.StatusAccepted)
 }
