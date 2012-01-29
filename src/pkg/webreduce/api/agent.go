@@ -11,17 +11,48 @@ import (
 	"net/http"
 )
 
-// IncomingAgents represent a persistable behaviour that collect and/or emit data
-type IncomingAgent struct {
-	Language string `json:"language"`
-	Code     string `json:"code"`
-}
-
 // Agents represent a persistable behaviour that collect and/or emit data
 type Agent struct {
 	Name     string `json:"name"`
 	Language string `json:"language"`
 	Code     string `json:"code"`
+}
+
+// Validates the agent.
+func (a *Agent) Valid() bool {
+	if len(a.Name) < 1 {
+		return false
+	}
+
+	if a.Language != "lua" {
+		return false
+	}
+
+	if _, err := lua.New().Eval(a.Code); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// Calls the agent with data
+func (a *Agent) Call(data interface{}) (err error) {
+	lctx := lua.New()
+	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", string(data)) })
+
+	fn, err := lctx.Eval(a.Code)
+	if err != nil {
+		return
+	}
+
+	fn(data.([]byte), []byte{})
+	return
+}
+
+// AgentList represents a list of persisted Agents
+type AgentList struct {
+	Count int     `json:"count"`
+	Items []Agent `json:"items"`
 }
 
 // The API for agent collections
@@ -82,32 +113,23 @@ func (api *AgentCollectionApi) Collection() *mgo.Collection {
 
 // Get a list of agents
 func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	var list []Agent
-
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
 	query := col.Find(bson.M{})
-	query.All(&list)
+	list := AgentList{Count: 0, Items: []Agent{}}
 
 	count, err := query.Count()
-	if err != nil {
-		count = 0
-	}
-
-	res := make(map[string]interface{})
-	res["count"] = count
-	if count == 0 {
-		res["result"] = []Agent{}
-	} else {
-		res["result"] = list
+	if err == nil {
+		list.Count = count
+		query.All(&list.Items)
 	}
 
 	encoder := json.NewEncoder(w)
-	encoder.Encode(res)
+	encoder.Encode(list)
 }
 
-// Put an agents
+// Put a named agent in the collection.
 func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
 	name, found := ctx["agent"]
 	if !found {
@@ -117,14 +139,14 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 
 	decoder := json.NewDecoder(r.Body)
 
-	data := &IncomingAgent{}
-	err := decoder.Decode(&data)
+	agent := &Agent{Name: name}
+	err := decoder.Decode(&agent)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if _, err := lua.New().Eval(data.Code); err != nil {
+	if !(agent.Name == name && agent.Valid()) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -132,9 +154,7 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
-	selector := bson.M{"name": name}
-	agent := &Agent{Name: name, Language: data.Language, Code: data.Code}
-	if _, err := col.Upsert(selector, agent); err != nil {
+	if _, err := col.Upsert(bson.M{"name": name}, agent); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -173,11 +193,10 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 		return
 	}
 
-	var agent *Agent
-
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
+	agent := &Agent{}
 	if err := col.Find(bson.M{"name": name}).One(&agent); err != nil {
 		http.NotFound(w, r)
 		return
@@ -189,16 +208,10 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 		return
 	}
 
-	lctx := lua.New()
-	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", string(data)) })
-
-	fn, err := lctx.Eval(agent.Code)
-	if err != nil {
+	if err := agent.Call(data); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	fn(data, []byte{})
 
 	w.WriteHeader(http.StatusAccepted)
 }
