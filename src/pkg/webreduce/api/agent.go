@@ -86,13 +86,13 @@ func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWri
 	defer col.Database.Session.Close()
 
 	query := col.Find(bson.M{})
-	count, err := query.Count()
-	if err != nil {
-		count = 0
-	}
+	list := AgentList{Count: 0, Items: []Agent{}}
 
-	list := AgentList{Count: count, Items: []Agent{}}
-	query.All(&list.Items)
+	count, err := query.Count()
+	if err == nil {
+		list.Count = count
+		query.All(&list.Items)
+	}
 
 	encoder := json.NewEncoder(w)
 	encoder.Encode(list)
