@@ -179,9 +179,9 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 	}
 
 	lctx := lua.New()
-	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", data) })
+	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", string(data)) })
 
-	fn, err := lctx.Eval(data.Code)
+	fn, err := lctx.Eval(agent.Code)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

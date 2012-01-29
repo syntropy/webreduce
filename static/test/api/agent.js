@@ -1,7 +1,7 @@
 hiro.module('Agent', {
   onTest: function() {
     var agent = {
-      code: 'local params = {...}; emit(params[0]);',
+      code: 'local params = {...}; emit("\\\""..params[1].."\\\" ← this is emmited data!");',
       language: 'lua',
       name: 'foo',
       url: '/agents/foo'
