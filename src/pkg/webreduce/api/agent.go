@@ -18,6 +18,12 @@ type Agent struct {
 	Code     string `json:"code"`
 }
 
+// AgentList represents a list of persisted Agents
+type AgentList struct {
+	Count int     `json:"count"`
+	Items []Agent `json:"items"`
+}
+
 // The API for agent collections
 type AgentCollectionApi struct {
 	config    map[string]string
@@ -76,29 +82,20 @@ func (api *AgentCollectionApi) Collection() *mgo.Collection {
 
 // Get a list of agents
 func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	var list []Agent
-
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
 	query := col.Find(bson.M{})
-	query.All(&list)
-
 	count, err := query.Count()
 	if err != nil {
 		count = 0
 	}
 
-	res := make(map[string]interface{})
-	res["count"] = count
-	if count == 0 {
-		res["result"] = []Agent{}
-	} else {
-		res["result"] = list
-	}
+	list := AgentList{Count: count, Items: []Agent{}}
+	query.All(&list.Items)
 
 	encoder := json.NewEncoder(w)
-	encoder.Encode(res)
+	encoder.Encode(list)
 }
 
 // Put an agents
@@ -111,14 +108,14 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 
 	decoder := json.NewDecoder(r.Body)
 
-	data := &Agent{}
-	err := decoder.Decode(&data)
+	agent := &Agent{}
+	err := decoder.Decode(&agent)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if _, err := lua.New().Eval(data.Code); err != nil {
+	if _, err := lua.New().Eval(agent.Code); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -126,9 +123,8 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
-	selector := bson.M{"name": name}
-	agent := &Agent{Name: name, Language: data.Language, Code: data.Code}
-	if _, err := col.Upsert(selector, agent); err != nil {
+	agent.Name = name
+	if _, err := col.Upsert(bson.M{"name": name}, agent); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

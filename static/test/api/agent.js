@@ -18,7 +18,7 @@ hiro.module('Agent', {
 
     GET({ url: '/agents' }, function(res) {
       h.assertEqual(res.status, 200);
-      h.assertEqual(res.body.result.length, res.body.count);
+      h.assertEqual(res.body.items.length, res.body.count);
 
       h.resume();
     });
