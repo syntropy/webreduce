@@ -83,7 +83,11 @@ func (api *AgentCollectionApi) Collection() *mgo.Collection {
 // Get a list of agents
 func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
 	var list []Agent
-	query := api.Collection().Find(bson.M{})
+
+	col := api.Collection()
+	defer col.Database.Session.Close()
+
+	query := col.Find(bson.M{})
 	query.All(&list)
 
 	count, err := query.Count()
@@ -125,7 +129,9 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 		return
 	}
 
-	col := api.dbsession.Copy().DB(api.config["db/name"]).C(api.config["db/collection/name"])
+	col := api.Collection()
+	defer col.Database.Session.Close()
+
 	selector := bson.M{"name": name}
 	agent := &Agent{Name: name, Language: data.Language, Code: data.Code}
 	if _, err := col.Upsert(selector, agent); err != nil {
@@ -144,7 +150,8 @@ func (api *AgentCollectionApi) GetAgent(ctx map[string]string, w http.ResponseWr
 		return
 	}
 
-	col := api.dbsession.Copy().DB(api.config["db/name"]).C(api.config["db/collection/name"])
+	col := api.Collection()
+	defer col.Database.Session.Close()
 
 	selector := bson.M{"name": name}
 	agent := &Agent{}
@@ -167,7 +174,11 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 	}
 
 	var agent *Agent
-	if err := api.Collection().Find(bson.M{"name": name}).One(&agent); err != nil {
+
+	col := api.Collection()
+	defer col.Database.Session.Close()
+
+	if err := col.Find(bson.M{"name": name}).One(&agent); err != nil {
 		http.NotFound(w, r)
 		return
 	}
