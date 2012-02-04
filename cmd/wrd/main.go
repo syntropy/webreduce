@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"wr/web/api"
+	"wr/web/app/sensor"
 	"wr/web/router"
 )
 
@@ -10,20 +10,20 @@ func main() {
 	cfg := map[string]string{
 		"db/url":             "localhost",
 		"db/name":            "webreduce",
-		"db/collection/name": "agents",
+		"db/collection/name": "sensors",
 	}
 
-	as, err := api.NewAgentCollectionApi(cfg)
+	sensor, err := sensor.NewSensorCollectionApi(cfg)
 	if err != nil {
 		panic(err)
 	}
-	defer as.Close()
+	defer sensor.Close()
 
-	r := router.NewRouter("/agents")
-	r.AddRoute("", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetList(ctx, w, r) }, "GET")
-	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.GetAgent(ctx, w, r) }, "GET")
-	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.PutAgent(ctx, w, r) }, "PUT")
-	r.AddRoute("/<agent>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { as.PostToAgent(ctx, w, r) }, "POST")
+	r := router.NewRouter("/sensors")
+	r.AddRoute("", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { sensor.GetList(ctx, w, r) }, "GET")
+	r.AddRoute("/<sensor>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { sensor.GetSensor(ctx, w, r) }, "GET")
+	r.AddRoute("/<sensor>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { sensor.PutSensor(ctx, w, r) }, "PUT")
+	r.AddRoute("/<sensor>", func(ctx map[string]string, w http.ResponseWriter, r *http.Request) { sensor.PostToSensor(ctx, w, r) }, "POST")
 
 	http.Handle("/", &r)
 	http.Handle("/test/", http.StripPrefix("/test/", http.FileServer(http.Dir("./static/test"))))

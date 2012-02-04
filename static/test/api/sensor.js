@@ -1,86 +1,86 @@
-hiro.module('Agent', {
+hiro.module('Sensor', {
   onTest: function() {
-    var agent = {
+    var sensor = {
       code: 'local params = {...}; emit("\\\""..params[1].."\\\" ← this is emmited data!");',
       language: 'lua',
       name: 'foo',
-      url: '/agents/foo'
+      url: '/sensors/foo'
     };
 
-    this.args = [ agent ];
+    this.args = [ sensor ];
   },
-  "test GET agents": function() {
+  "test GET sensors": function() {
     var h = this;
 
     h.expect(2);
     h.pause();
 
 
-    GET({ url: '/agents' }, function(res) {
+    GET({ url: '/sensors' }, function(res) {
       h.assertEqual(res.status, 200);
       h.assertEqual(res.body.items.length, res.body.count);
 
       h.resume();
     });
   },
-  "test PUT agent": function(agent) {
+  "test PUT sensor": function(sensor) {
     var h = this;
 
     h.expect(1);
     h.pause();
 
-    PUT({ url: agent.url, data: { code: agent.code, language: agent.language } }, function(res) {
+    PUT({ url: sensor.url, data: { code: sensor.code, language: sensor.language } }, function(res) {
       h.assertEqual(res.status, 204);
 
       h.resume()
     });
   },
-  "test GET agent": function(agent) {
+  "test GET sensor": function(sensor) {
     var h = this;
 
     h.expect(4);
     h.pause();
 
-    GET({ url: agent.url }, function(res) {
+    GET({ url: sensor.url }, function(res) {
       h.assertEqual(res.status, 200);
-      h.assertEqual(res.body.name, agent.name);
-      h.assertEqual(res.body.code, agent.code);
-      h.assertEqual(res.body.language, agent.language);
+      h.assertEqual(res.body.name, sensor.name);
+      h.assertEqual(res.body.code, sensor.code);
+      h.assertEqual(res.body.language, sensor.language);
 
       h.resume();
     });
   },
-  "test POST agent": function(agent) {
+  "test POST sensor": function(sensor) {
     var h = this;
 
     h.expect(1);
     h.pause();
 
-    POST({ url: agent.url, data: { foo: 'bar' } }, function(res) {
+    POST({ url: sensor.url, data: { foo: 'bar' } }, function(res) {
       h.assertEqual(res.status, 202);
 
       h.resume();
     });
   },
-  "test PUT with invalid code": function(agent) {
+  "test PUT with invalid code": function(sensor) {
     var h = this;
 
     h.expect(1);
     h.pause();
 
-    PUT({ url: agent.url, data: { code: 'that is no code, no good', language: agent.language } }, function(res) {
+    PUT({ url: sensor.url, data: { code: 'that is no code, no good', language: sensor.language } }, function(res) {
       h.assertEqual(res.status, 400);
 
       h.resume()
     });
   },
-  "test POST on missing agent": function() {
+  "test POST on missing sensor": function() {
     var h = this;
 
     h.expect(1);
     h.pause();
 
-    POST({ url: '/agents/bar', data: { foo: 'bar' } }, function(res) {
+    POST({ url: '/sensors/bar', data: { foo: 'bar' } }, function(res) {
       h.assertEqual(res.status, 404);
 
       h.resume();
