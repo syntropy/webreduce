@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"interpreter/lua"
 	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
+	"wr/interpreter/lua"
 )
 
 // Agents represent a persistable behaviour that collect and/or emit data

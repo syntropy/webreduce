@@ -3,7 +3,7 @@ package lua
 import (
 	"errors"
 	"golua"
-	"interpreter"
+	"wr/interpreter"
 )
 
 type LuaInterpreter struct {
