@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"regexp"
 	"sort"
+	"wr"
 )
 
 const (
@@ -78,7 +79,7 @@ func NewRule(pattern string, methods ...string) *Rule {
 }
 
 // Match given path and return named args.
-func (r *Rule) Match(pattern string, method string) (args map[string]string, match bool) {
+func (r *Rule) Match(pattern string, method string) (args wr.Context, match bool) {
 	for _, m := range r.methods {
 		if m == method {
 			match = true
@@ -101,9 +102,10 @@ func (r *Rule) Match(pattern string, method string) (args map[string]string, mat
 		return
 	}
 
-	args = map[string]string{}
+	// data := map[string]string{}
+	args = &wr.StringContext{}
 	for i, v := range values[1:] {
-		args[r.args[i]] = v
+		args.Set(r.args[i], v)
 	}
 
 	return
@@ -112,11 +114,11 @@ func (r *Rule) Match(pattern string, method string) (args map[string]string, mat
 // A Route associates a Rule and a handler function
 type Route struct {
 	rule    Rule
-	handler func(map[string]string, http.ResponseWriter, *http.Request)
+	handler func(wr.Context, http.ResponseWriter, *http.Request)
 }
 
 // Match given pattern. Documented in Rule.Match
-func (r *Route) Match(pattern string, method string) (args map[string]string, match bool) {
+func (r *Route) Match(pattern string, method string) (args wr.Context, match bool) {
 	return r.rule.Match(pattern, method)
 }
 
@@ -153,7 +155,7 @@ func NewRouter(prefix string) Router {
 }
 
 // Add a route to this router.
-func (r *Router) AddRoute(pattern string, handler func(map[string]string, http.ResponseWriter, *http.Request), methods ...string) {
+func (r *Router) AddRoute(pattern string, handler func(wr.Context, http.ResponseWriter, *http.Request), methods ...string) {
 	rule := *NewRule(r.prefix+pattern, methods...)
 	route := Route{rule, handler}
 
@@ -161,7 +163,7 @@ func (r *Router) AddRoute(pattern string, handler func(map[string]string, http.R
 }
 
 // Match given pattern. Documented in Rule.Match
-func (r *Router) Match(pattern string, method string) (handler func(map[string]string, http.ResponseWriter, *http.Request), args map[string]string, match bool) {
+func (r *Router) Match(pattern string, method string) (handler func(wr.Context, http.ResponseWriter, *http.Request), args wr.Context, match bool) {
 	if !r.sorted {
 		sort.Sort(r.routes)
 		r.sorted = true

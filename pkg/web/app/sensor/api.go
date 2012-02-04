@@ -7,36 +7,37 @@ import (
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
+	"wr"
 )
 
 // The API for sensor collections
 type SensorCollectionApi struct {
-	config    map[string]string
+	config    wr.Context
 	dbsession *mgo.Session
 }
 
-func NewSensorCollectionApi(config map[string]string) (a SensorCollectionApi, err error) {
+func NewSensorCollectionApi(config wr.Context) (a SensorCollectionApi, err error) {
 	a.config = config
 
-	dburl, found := a.config["db/url"]
+	dburl, found := a.config.Get("db/url")
 	if !found {
 		err = errors.New("Missing config entry 'db/url'")
 		return
 	}
 
-	dbname, found := a.config["db/name"]
+	dbname, found := a.config.Get("db/name")
 	if !found {
 		err = errors.New("Missing config entry 'db/name'")
 		return
 	}
 
-	colname, found := a.config["db/collection/name"]
+	colname, found := a.config.Get("db/collection/name")
 	if !found {
 		err = errors.New("Missing config entry 'db/collection/name'")
 		return
 	}
 
-	a.dbsession, err = mgo.Dial(dburl)
+	a.dbsession, err = mgo.Dial(dburl.(string))
 	if err != nil {
 		return a, err
 	}
@@ -49,7 +50,7 @@ func NewSensorCollectionApi(config map[string]string) (a SensorCollectionApi, er
 		Sparse:     true,
 	}
 
-	col := a.dbsession.DB(dbname).C(colname)
+	col := a.dbsession.DB(dbname.(string)).C(colname.(string))
 	if err := col.EnsureIndex(index); err != nil {
 		return a, err
 	}
@@ -62,11 +63,21 @@ func (api *SensorCollectionApi) Close() {
 }
 
 func (api *SensorCollectionApi) Collection() *mgo.Collection {
-	return api.dbsession.Copy().DB(api.config["db/name"]).C(api.config["db/collection/name"])
+	dbname, found := api.config.Get("db/name")
+	if !found {
+		panic("missing conf")
+	}
+
+	colname, found := api.config.Get("db/collection/name")
+	if !found {
+		panic("missing conf")
+	}
+
+	return api.dbsession.Copy().DB(dbname.(string)).C(colname.(string))
 }
 
 // Get a list of sensors
-func (api *SensorCollectionApi) GetList(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
+func (api *SensorCollectionApi) GetList(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
@@ -84,8 +95,8 @@ func (api *SensorCollectionApi) GetList(ctx map[string]string, w http.ResponseWr
 }
 
 // Put a named sensor in the collection.
-func (api *SensorCollectionApi) PutSensor(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx["sensor"]
+func (api *SensorCollectionApi) PutSensor(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx.Get("sensor")
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -93,7 +104,7 @@ func (api *SensorCollectionApi) PutSensor(ctx map[string]string, w http.Response
 
 	decoder := json.NewDecoder(r.Body)
 
-	sensor := &Sensor{Name: name}
+	sensor := &Sensor{Name: name.(string)}
 	err := decoder.Decode(&sensor)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -117,8 +128,8 @@ func (api *SensorCollectionApi) PutSensor(ctx map[string]string, w http.Response
 }
 
 // Get an sensor by name
-func (api *SensorCollectionApi) GetSensor(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx["sensor"]
+func (api *SensorCollectionApi) GetSensor(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx.Get("sensor")
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -140,8 +151,8 @@ func (api *SensorCollectionApi) GetSensor(ctx map[string]string, w http.Response
 }
 
 // Post data to an sensor
-func (api *SensorCollectionApi) PostToSensor(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx["sensor"]
+func (api *SensorCollectionApi) PostToSensor(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx.Get("sensor")
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
 		return
