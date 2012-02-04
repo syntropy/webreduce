@@ -72,12 +72,13 @@
   });
 
   hiro.bind('test.onStart', function (test) {
-    var uid = 'hiro_test_' + test.suite.name + '_' + test.name;
+    var name = test.name.replace(/^test/, '');
+    var uid = nextId();
 
     $('<div>', {
       'class': 'idle test',
       'id': uid,
-      'html': '<a href="?' + test.suite.name + '.' + test.name + '">' + test.name + '</a>'
+      'html': '<span>' + name + '</span>'
     }).append($('<div>', {
       'class': 'report'
     })).appendTo(context);
@@ -126,3 +127,9 @@
     context = '#hiro_suite_' + test.suite.name;
   });
 }(jQuery, window));
+
+var id = 0;
+
+function nextId() {
+  return id++;
+}
