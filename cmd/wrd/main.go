@@ -2,8 +2,8 @@ package main
 
 import (
 	"net/http"
-	"webreduce/api"
-	"webreduce/router"
+	"wr/web/api"
+	"wr/web/router"
 )
 
 func main() {
