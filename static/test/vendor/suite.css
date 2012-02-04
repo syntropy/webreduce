@@ -1,5 +1,5 @@
 body {
-  background-color: #eee;
+  background-color: #fff;
   font-family: Verdana, Arial, Serif;
   margin: 0;
   padding: 0;
@@ -16,7 +16,7 @@ h1 {
   margin-bottom: 10px;
   padding: 0 0 5px 7px;
   border-bottom: solid 1px #ddd;
-  width: 600px;
+  width: 900px;
   text-align: left;
   font-size: 90%;
   font-weight: bold;
@@ -30,29 +30,13 @@ h1 span {
   color: #eee;
 }
 
-div#footer {
-  margin: 50px 0;
-  font-size: 90%;
-  font-weight: normal;
-  color: #ccc;
-  text-shadow: #fff 0px 1px 0px;
-}
-
 div#web {
   clear: both;
   margin: 0px auto;
-  width: 600px;
+  width: 900px;
   min-height: 400px;
-  border-radius: 3px;
   text-align: left;
   padding: 10px;
-}
-
-div#web p, div#web div.suite {
-  background-color: #fff;
-  border-radius: 2px;
-  margin: 0 0 5px 0;
-  padding: 0;
 }
 
 /* Simple output */
@@ -63,26 +47,12 @@ div#web p.simple {
   background-color: #eee;
 }
 
-/* Suite */
-div#web div.suite {
-  color: #444;
-  border: solid 1px #ddd;
-  padding: 5px 5px 5px 15px;
-}
-
-div#web div.succ {
-  border: solid 1px green;
-}
-
-div#web div.fail {
-  border: solid 1px #900020;
-}
-
 div#web div.suite h2 {
   font-weight: normal;
   font-size: 100%;
   margin: 0 0 10px -10px;
   padding: 0;
+  text-transform: uppercase;
 }
 
 /* Test */

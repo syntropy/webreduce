@@ -19,7 +19,7 @@
       'class': 'idle suite',
       'id': uid
     }).appendTo(context)
-      .append($('<h2>', { 'text': suite.name }));
+      .append($('<h2>', { 'html': '&diams; ' + suite.name }));
 
 		context = '#' + uid;
 	});
