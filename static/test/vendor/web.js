@@ -23,110 +23,113 @@
 
 /*global hiro:false, ender:false */
 
-(function (window, undefined) {
-	"use strict";
+(function ($, window, undefined) {
+  "use strict";
 
-	var document = window.document;
-	var context  = '#web';
+  var context  = '#web';
+  var start;
 
-	hiro.bind('hiro.onComplete', function () {
-		ender(document.createElement('p'))
-			.addClass('simple')
-			.html('All tests finished')
-			.appendTo(context);
-	});
+  hiro.bind('hiro.onStart', function() {
+    start = Date.now();
+  });
 
-	hiro.bind('suite.onStart', function (suite) {
-		var uid = 'hiro_suite_' + suite.name;
-		var div = document.createElement('div');
+  hiro.bind('hiro.onComplete', function () {
+    var duration = Date.now() - start;
 
-		ender(div)
-			.addClass('suite')
-			.addClass('idle')
-			.attr('id', uid);
+    $('<div>', {
+      'class': 'result succ',
+      'html': '(' + duration + 'ms)'
+    }).appendTo(context);
+  });
 
-		ender(document.createElement('h2'))
-			.html(suite.name)
-			.appendTo(div);
+  hiro.bind('suite.onStart', function (suite) {
+    var uid = 'hiro_suite_' + suite.name;
 
-		ender(context).append(div);
+    $('<div>', {
+      'class': 'idle suite',
+      'id': uid
+    }).append($('<h2>', {
+      'html': '<a href="?' + suite.name + '">' + suite.name + '</a>'
+    })).appendTo(context);
 
-		context = '#' + uid;
-	});
+    context = '#' + uid;
+  });
 
-	hiro.bind('suite.onComplete', function (suite, success) {
-		ender(context)
-			.removeClass('idle')
-			.addClass(success ? 'succ' : 'fail');
+  hiro.bind('suite.onComplete', function (suite, success) {
+    $(context)
+      .removeClass('idle')
+      .addClass(success ? 'succ' : 'fail');
 
-		context = '#web';
-	});
+    context = '#web';
+  });
 
-	hiro.bind('suite.onTimeout', function (suite, success) {
-		ender(context)
-			.removeClass('idle')
-			.addClass('fail');
+  hiro.bind('suite.onTimeout', function (suite, success) {
+    $(context)
+      .removeClass('idle')
+      .addClass('fail');
 
-		context = '#web';
-	});
+    context = '#web';
+  });
 
-	hiro.bind('test.onStart', function (test) {
-		var uid = 'hiro_test_' + test.suite.name + '_' + test.name;
-		var div = document.createElement('div');
+  hiro.bind('test.onStart', function (test) {
+    var name = test.name.replace(/^test/, '');
+    var uid = nextId();
 
-		ender(div)
-			.addClass('test')
-			.addClass('idle')
-			.attr('id', uid)
-			.html(test.name);
+    $('<div>', {
+      'class': 'idle test',
+      'id': uid,
+      'html': '<span>' + name + '</span>'
+    }).append($('<div>', {
+      'class': 'report'
+    })).appendTo(context);
 
-		ender(document.createElement('div'))
-			.addClass('report')
-			.hide()
-			.appendTo(div);
+    context = '#' + uid;
+  });
 
-		ender(div).appendTo(context);
-		context = '#' + uid;
-	});
+  hiro.bind('test.onFailure', function (test, report) {
+    var div = $('div.report', context);
 
-	hiro.bind('test.onFailure', function (test, report) {
-		var div = ender('div.report', context);
+    $('<p>', {
+      'html': '<label>Assertion:</label> ' + report.assertion
+    }).appendTo(div)
 
-		ender(document.createElement('p'))
-			.html('<label>Assertion:</label> ' + report.assertion)
-			.appendTo(div);
+    if (report.expected) {
+      $('<p>', {
+        'html': '<label>Expected:</label> ' + report.expected
+      }).appendTo(div);
+    }
 
-		if (report.expected) {
-			ender(document.createElement('p'))
-				.html('<label>Expected:</label> ' + report.expected)
-				.appendTo(div);
-		}
+    $('<p>', {
+      'html': '<label>Result:</label> ' + report.result
+    }).appendTo(div);
 
-		ender(document.createElement('p'))
-			.html('<label>Result:</label> ' + report.result)
-			.appendTo(div);
+    $('<p>', {
+      'html': '<label>Position:</label> ' + report.position
+    }).appendTo(div);
+  });
 
-		ender(document.createElement('p'))
-			.html('<label>Position:</label> ' + report.position)
-			.appendTo(div);
-	});
+  hiro.bind('test.onComplete', function (test, success) {
+    $(context)
+      .removeClass('idle')
+      .addClass(success ? 'succ' : 'fail');
 
-	hiro.bind('test.onComplete', function (test, success) {
-		ender(context)
-			.removeClass('idle')
-			.addClass(success ? 'succ' : 'fail');
+    if (!success)
+      $('div.report', context).show();
 
-		if (!success)
-			ender('div.report', context).show();
+    context = '#hiro_suite_' + test.suite.name;
+  });
 
-		context = '#hiro_suite_' + test.suite.name;
-	});
+  hiro.bind('test.onTimeout', function (test, success) {
+    $(context)
+      .removeClass('idle')
+      .addClass('fail');
 
-	hiro.bind('test.onTimeout', function (test, success) {
-		ender(context)
-			.removeClass('idle')
-			.addClass('fail');
+    context = '#hiro_suite_' + test.suite.name;
+  });
+}(jQuery, window));
 
-		context = '#hiro_suite_' + test.suite.name;
-	});
-}(window));
+var id = 0;
+
+function nextId() {
+  return id++;
+}

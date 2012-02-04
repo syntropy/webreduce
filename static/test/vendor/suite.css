@@ -1,0 +1,96 @@
+body {
+  background-color: #fff;
+  font-family: Verdana, Arial, Serif;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-size: 10pt;
+}
+
+a:hover {
+  color: #900020;
+}
+
+h1 {
+  margin: auto;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  border-bottom: solid 1px #ddd;
+  width: 900px;
+  text-align: left;
+  font-size: 90%;
+  font-weight: bold;
+  color: #ccc;
+  text-transform: uppercase;
+  text-shadow: #fff 0px 1px 0px;
+}
+
+h1 span {
+  text-shadow: none;
+  color: #eee;
+}
+
+div#web {
+  clear: both;
+  margin: 0px auto;
+  width: 900px;
+  min-height: 400px;
+  text-align: left;
+  padding: 10px;
+}
+
+/* Result output */
+div#web div.result {
+  margin-top: 30px;
+}
+
+div#web div.suite h2 {
+  font-weight: normal;
+  font-size: 100%;
+  margin: 0 0 10px 0px;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+div#web div.suite a {
+  color: #444;
+  text-decoration: none;
+}
+
+div#web div.suite a:hover {
+  text-decoration: underline;
+}
+
+/* Test */
+div#web div.test span {
+  color: #ccc;
+}
+
+div#web div.suite div.succ span {
+  color: green;
+}
+
+div#web div.suite div.fail span {
+  color: #900020;
+}
+
+/* Failure */
+div#web div.test div.report {
+  font-size: 80%;
+  padding: 5px;
+}
+
+div#web div.test div.report p {
+  margin: 0;
+  padding: 0;
+}
+
+div#web div.test div.report p label {
+  display: inline-block;
+  font-weight: bold;
+  width: 75px;
+}
+
+textarea.fixture {
+  display: none;
+}
