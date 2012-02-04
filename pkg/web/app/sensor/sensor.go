@@ -1,36 +1,67 @@
-package api
+package sensor
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"interpreter/lua"
 	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
+	"wr/interpreter/lua"
 )
 
-// IncomingAgents represent a persistable behaviour that collect and/or emit data
-type IncomingAgent struct {
-	Language string `json:"language"`
-	Code     string `json:"code"`
-}
-
-// Agents represent a persistable behaviour that collect and/or emit data
-type Agent struct {
+// Sensors represent a persistable behaviour that collect and/or emit data
+type Sensor struct {
 	Name     string `json:"name"`
 	Language string `json:"language"`
 	Code     string `json:"code"`
 }
 
-// The API for agent collections
-type AgentCollectionApi struct {
+// Validates the sensor.
+func (a *Sensor) Valid() bool {
+	if len(a.Name) < 1 {
+		return false
+	}
+
+	if a.Language != "lua" {
+		return false
+	}
+
+	if _, err := lua.New().Eval(a.Code); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// Calls the sensor with data
+func (a *Sensor) Call(data interface{}) (err error) {
+	lctx := lua.New()
+	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", string(data)) })
+
+	fn, err := lctx.Eval(a.Code)
+	if err != nil {
+		return
+	}
+
+	fn(data.([]byte), []byte{})
+	return
+}
+
+// SensorList represents a list of persisted Sensors
+type SensorList struct {
+	Count int      `json:"count"`
+	Items []Sensor `json:"items"`
+}
+
+// The API for sensor collections
+type SensorCollectionApi struct {
 	config    map[string]string
 	dbsession *mgo.Session
 }
 
-func NewAgentCollectionApi(config map[string]string) (a AgentCollectionApi, err error) {
+func NewSensorCollectionApi(config map[string]string) (a SensorCollectionApi, err error) {
 	a.config = config
 
 	dburl, found := a.config["db/url"]
@@ -72,44 +103,35 @@ func NewAgentCollectionApi(config map[string]string) (a AgentCollectionApi, err 
 	return
 }
 
-func (api *AgentCollectionApi) Close() {
+func (api *SensorCollectionApi) Close() {
 	api.dbsession.Close()
 }
 
-func (api *AgentCollectionApi) Collection() *mgo.Collection {
+func (api *SensorCollectionApi) Collection() *mgo.Collection {
 	return api.dbsession.Copy().DB(api.config["db/name"]).C(api.config["db/collection/name"])
 }
 
-// Get a list of agents
-func (api *AgentCollectionApi) GetList(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	var list []Agent
-
+// Get a list of sensors
+func (api *SensorCollectionApi) GetList(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
 	query := col.Find(bson.M{})
-	query.All(&list)
+	list := SensorList{Count: 0, Items: []Sensor{}}
 
 	count, err := query.Count()
-	if err != nil {
-		count = 0
-	}
-
-	res := make(map[string]interface{})
-	res["count"] = count
-	if count == 0 {
-		res["result"] = []Agent{}
-	} else {
-		res["result"] = list
+	if err == nil {
+		list.Count = count
+		query.All(&list.Items)
 	}
 
 	encoder := json.NewEncoder(w)
-	encoder.Encode(res)
+	encoder.Encode(list)
 }
 
-// Put an agents
-func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx["agent"]
+// Put a named sensor in the collection.
+func (api *SensorCollectionApi) PutSensor(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx["sensor"]
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -117,14 +139,14 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 
 	decoder := json.NewDecoder(r.Body)
 
-	data := &IncomingAgent{}
-	err := decoder.Decode(&data)
+	sensor := &Sensor{Name: name}
+	err := decoder.Decode(&sensor)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if _, err := lua.New().Eval(data.Code); err != nil {
+	if !(sensor.Name == name && sensor.Valid()) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -132,9 +154,7 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
-	selector := bson.M{"name": name}
-	agent := &Agent{Name: name, Language: data.Language, Code: data.Code}
-	if _, err := col.Upsert(selector, agent); err != nil {
+	if _, err := col.Upsert(bson.M{"name": name}, sensor); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -142,9 +162,9 @@ func (api *AgentCollectionApi) PutAgent(ctx map[string]string, w http.ResponseWr
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// Get an agent by name
-func (api *AgentCollectionApi) GetAgent(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx["agent"]
+// Get an sensor by name
+func (api *SensorCollectionApi) GetSensor(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx["sensor"]
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -154,31 +174,30 @@ func (api *AgentCollectionApi) GetAgent(ctx map[string]string, w http.ResponseWr
 	defer col.Database.Session.Close()
 
 	selector := bson.M{"name": name}
-	agent := &Agent{}
-	err := col.Find(selector).One(&agent)
+	sensor := &Sensor{}
+	err := col.Find(selector).One(&sensor)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	encoder := json.NewEncoder(w)
-	encoder.Encode(agent)
+	encoder.Encode(sensor)
 }
 
-// Post data to an agent
-func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx["agent"]
+// Post data to an sensor
+func (api *SensorCollectionApi) PostToSensor(ctx map[string]string, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx["sensor"]
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	var agent *Agent
-
 	col := api.Collection()
 	defer col.Database.Session.Close()
 
-	if err := col.Find(bson.M{"name": name}).One(&agent); err != nil {
+	sensor := &Sensor{}
+	if err := col.Find(bson.M{"name": name}).One(&sensor); err != nil {
 		http.NotFound(w, r)
 		return
 	}
@@ -189,16 +208,10 @@ func (api *AgentCollectionApi) PostToAgent(ctx map[string]string, w http.Respons
 		return
 	}
 
-	lctx := lua.New()
-	lctx.RegisterEmitCallback(func(data []byte) { fmt.Printf("EMIT: %v\n", string(data)) })
-
-	fn, err := lctx.Eval(agent.Code)
-	if err != nil {
+	if err := sensor.Call(data); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	fn(data, []byte{})
 
 	w.WriteHeader(http.StatusAccepted)
 }

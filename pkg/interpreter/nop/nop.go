@@ -1,7 +1,7 @@
 package nop
 
 import (
-	"interpreter"
+	"wr/interpreter"
 )
 
 type NopInterpreter struct {
