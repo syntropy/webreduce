@@ -9,7 +9,7 @@ hiro.module('Sensor', {
 
     this.args = [ sensor ];
   },
-  "test GET sensors": function() {
+  "testGETsensors": function() {
     var h = this;
 
     h.expect(2);
@@ -23,7 +23,7 @@ hiro.module('Sensor', {
       h.resume();
     });
   },
-  "test PUT sensor": function(sensor) {
+  "testPUTsensor": function(sensor) {
     var h = this;
 
     h.expect(1);
@@ -35,7 +35,7 @@ hiro.module('Sensor', {
       h.resume()
     });
   },
-  "test GET sensor": function(sensor) {
+  "testGETsensor": function(sensor) {
     var h = this;
 
     h.expect(4);
@@ -50,7 +50,7 @@ hiro.module('Sensor', {
       h.resume();
     });
   },
-  "test POST sensor": function(sensor) {
+  "testPOSTsensor": function(sensor) {
     var h = this;
 
     h.expect(1);
@@ -62,7 +62,7 @@ hiro.module('Sensor', {
       h.resume();
     });
   },
-  "test PUT with invalid code": function(sensor) {
+  "testPUTwithinvalidcode": function(sensor) {
     var h = this;
 
     h.expect(1);
@@ -74,7 +74,7 @@ hiro.module('Sensor', {
       h.resume()
     });
   },
-  "test POST on missing sensor": function() {
+  "testPOSTonmissingsensor": function() {
     var h = this;
 
     h.expect(1);
