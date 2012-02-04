@@ -39,12 +39,9 @@ div#web {
   padding: 10px;
 }
 
-/* Simple output */
-div#web p.simple {
-  color: #999;
-  text-align: center;
-  margin-top: 10px;
-  background-color: #eee;
+/* Result output */
+div#web div.result {
+  margin-top: 30px;
 }
 
 div#web div.suite h2 {
@@ -65,20 +62,18 @@ div#web div.suite a:hover {
 }
 
 /* Test */
-div#web div.test {
-  margin: 5px 0;
-  border-left: solid 3px #ccc;
-  padding-left: 5px;
+div#web div.test a {
+  color: #ccc;
 }
 
-div#web div.suite div.succ {
-  border: none;
-  border-left: solid 3px green;
+div#web div.suite div.succ a {
+  color: green;
+  font-weight: bold;
 }
 
-div#web div.suite div.fail {
-  border: none;
-  border-left: solid 3px #900020;
+div#web div.suite div.fail a {
+  color: #900020;
+  font-weight: bold;
 }
 
 /* Failure */

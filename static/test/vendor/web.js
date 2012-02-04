@@ -23,16 +23,22 @@
 
 /*global hiro:false, ender:false */
 
-(function (window, undefined) {
+(function ($, window, undefined) {
   "use strict";
 
-  var document = window.document;
   var context  = '#web';
+  var start;
+
+  hiro.bind('hiro.onStart', function() {
+    start = Date.now();
+  });
 
   hiro.bind('hiro.onComplete', function () {
-    $('<p>', {
-      'class': 'simple',
-      'test': 'All tests finished'
+    var duration = Date.now() - start;
+
+    $('<div>', {
+      'class': 'result succ',
+      'html': '(' + duration + 'ms)'
     }).appendTo(context);
   });
 
@@ -119,4 +125,4 @@
 
     context = '#hiro_suite_' + test.suite.name;
   });
-}(window));
+}(jQuery, window));
