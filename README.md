@@ -1,55 +1,10 @@
 # WebReduce
 
-Scriptable resource manipulation tool.
-
-Define behaviour as [Purely functional](http://en.wikipedia.org/wiki/Purely_functional) handler implemented in [Javascript](http://en.wikipedia.org/wiki/JavaScript). Control the flow of entities in, through and out of the system with the help of Destinations & Sources.
+Reduce the web.
 
 ## API
 
-### Behaviour
-
-Create a behaviour, its destinations and its sources:
-
-    POST http://lolcathost/behaviour HTTP/1.1
-    content-type: text/javascript
-    x-wr-destination: http://lolcathost/meow
-    x-wr-source: http://lolcathost/ninjas
-
-    function main(data) { return data; }
-    ---
-    302
-    Location: http://lolcathost/abc123
-
-Update the metainformation of a created behaviour:
-
-    PUT http://lolcathost/abc123 HTTP/1.1
-    x-wr-destination: http://sudo.com/make/sandwich
-    x-wr-source: http://lolcathost/nyan
-    ---
-    204
-
-Request the metainformation for a behaviour:
-
-    HEAD http://lolcathost/abc123 HTTP/1.1
-    ---
-    200
-    x-wr-destination: http://sudo.com/make/me/sandwich
-    x-wr-source: http://lolcathost/nyan
-
-Delete a behaviour:
-
-    DELETE http://lolcathost/abc123 HTTP/1.1
-    ---
-    204
-
-
-### Destination & Source
-
-Destinations and sources MUST be a valid absolute [URI](http://en.wikipedia.org/wiki/Uniform_resource_identifier) and can be anything from HTTP url to a database location, but MUST be of a supported protocol. References are passed via the `x-wr-destination` & `x-wr-source` header.
-
-Create multiple destinations or sources with the help of a comma-sperated list:
-
-    x-wr-destination: http://lolcathost/sandwich,http://lolcathost/nyan
+Currently the API is only documented in the client integration tests in `static/test/api/*.js`.
 
 ### Languages
 
