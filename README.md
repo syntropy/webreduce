@@ -6,6 +6,57 @@ Reduce the web.
 
 Currently the API is only documented in the client integration tests in `static/test/api/*.js`.
 
+## Internals
+
+### Devices
+
+Abstract creation of complex devices for message passing, always acting on a cardinality of one. Other endpoints are addressable unique identifier.
+
+``` go
+codec = new(codec.JSONDecoder)
+dev := messaging.NewDevice(codec)
+go func() {
+  err := <-dev.Err
+  panic(err)
+}()
+
+dev.Pull("exampleapp.messages.*")
+dev.Publish("example.messages.word.count")
+
+for msg := range dev.In {
+  dev.Out <-WordCount(msg)
+}
+```
+
+#### Goals
+
+* Abstraction with single cardinality
+* Single entry point
+* Single exit point
+* On-the fly configuraton
+* Easy configuration
+
+#### API
+
+``` go
+type device struct {
+  Codec messaging.Codec
+  In chan *messaging.Message
+  Err chan *messaging.Error
+  Out chan *messaging.Message
+}
+```
+
+`NewDevice(codec Codec) (d *Device)` - returns new Device instance
+
+`(d *Device) Pull(endpoint string)` - listens for new messages on that endpoint
+
+`(d *Device) Push(endpoint string)` - passes new messages to that endpoint
+
+`(d *Device) Publish(endpoint string)` - passes new messages to that endpoint
+
+`(d *Device) Subscribe(endpoint string)` - listens for new messages on that endpoint
+
 ### Languages
 
 At the time, only LUA is supported. The design allows adding new interpreters very easily, though.
