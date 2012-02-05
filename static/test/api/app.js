@@ -63,7 +63,7 @@ hiro.module('APP', {
 
     PUT({
       url: '/' + app.name + '/sensors/' + sensor.name,
-      data: { name: sensor.name }
+      data: { name: sensor.name, sensor: "POST" }
     }, function(res) {
       h.assertEqual(res.status, 204);
 

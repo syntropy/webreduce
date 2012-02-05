@@ -137,7 +137,7 @@ func (a *Api) PostMessage(ctx wr.Context, w http.ResponseWriter, r *http.Request
 	}
 
 	col := a.Collection()
-	q := bson.M{"name": sensorname.(string)}
+	q := bson.M{"name": sensorname.(string), "sensor": "POST"}
 	sensor := &Sensor{}
 	if err := col.Find(q).Select(bson.M{"name": 1}).One(&sensor); err != nil {
 		http.NotFound(w, r)
