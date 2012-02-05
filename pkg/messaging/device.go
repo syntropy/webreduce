@@ -23,7 +23,7 @@ func NewDevice() (d *Device) {
 	return
 }
 
-func (d *Device) BeginPub(endpoint string) {
+func (d *Device) StartPub(endpoint string) {
 	id := "pub/" + endpoint
 
 	d.sockets[id] = map[string]Socket{}
@@ -46,7 +46,7 @@ func (d *Device) StopPub(endpoint string) {
 	delete(d.sockets, endpoint)
 }
 
-func (d *Device) BeginPull(endpoint string) {
+func (d *Device) StartPull(endpoint string) {
 	id := "pull/" + endpoint
 
 	d.sockets[id] = map[string]Socket{}

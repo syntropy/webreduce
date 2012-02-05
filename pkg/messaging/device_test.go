@@ -20,7 +20,7 @@ func TestPub(t *testing.T) {
 		t.Error(err)
 	}
 
-	dev.BeginPub("pub-test")
+	dev.StartPub("pub-test")
 
 	// FIXME find a better way to detect successfull tcp handshake
 	time.Sleep(200 * time.Millisecond)
@@ -48,7 +48,7 @@ func TestPull(t *testing.T) {
 		t.Error(err)
 	}
 
-	dev.BeginPull("pull-test")
+	dev.StartPull("pull-test")
 
 	push.Chan <- &Message{Payload: []byte(testPayload)}
 	msg := <-dev.In

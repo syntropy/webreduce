@@ -23,8 +23,8 @@ go func() {
   panic(err)
 }()
 
-dev.BeginPull("exampleapp.messages.*")
-dev.BeginPub("example.messages.word.count")
+dev.StartPull("exampleapp.messages.*")
+dev.StartPub("example.messages.word.count")
 
 for msg := range dev.In {
   dev.Out <-WordCount(msg)
