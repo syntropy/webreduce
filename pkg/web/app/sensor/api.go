@@ -1,182 +1,167 @@
 package sensor
 
 import (
-	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
 	"wr"
+	"wr/messaging"
+	"wr/web/app"
+	"wr/web/router"
 )
 
-// The API for sensor collections
-type SensorCollectionApi struct {
-	config    wr.Context
-	dbsession *mgo.Session
+type Api struct {
+	dbsession  *mgo.Session
+	appcolname string
+	colname    string
 }
 
-func NewSensorCollectionApi(config wr.Context) (a SensorCollectionApi, err error) {
-	a.config = config
-
-	dburl, found := a.config.Get("db/url")
-	if !found {
-		err = errors.New("Missing config entry 'db/url'")
-		return
-	}
-
-	dbname, found := a.config.Get("db/name")
-	if !found {
-		err = errors.New("Missing config entry 'db/name'")
-		return
-	}
-
-	colname, found := a.config.Get("db/collection/name")
-	if !found {
-		err = errors.New("Missing config entry 'db/collection/name'")
-		return
-	}
-
-	a.dbsession, err = mgo.Dial(dburl.(string))
+func NewApi(dburl, appcolname, colname string) (api Api, err error) {
+	dbsession, err := mgo.Dial(dburl)
 	if err != nil {
-		return a, err
+		return
 	}
 
-	index := mgo.Index{
-		Key:        []string{"name"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-
-	col := a.dbsession.DB(dbname.(string)).C(colname.(string))
-	if err := col.EnsureIndex(index); err != nil {
-		return a, err
-	}
+	api = Api{dbsession: dbsession, appcolname: appcolname, colname: colname}
 
 	return
 }
 
-func (api *SensorCollectionApi) Close() {
-	api.dbsession.Close()
+func (a *Api) Close() {
+	a.dbsession.Close()
 }
 
-func (api *SensorCollectionApi) Collection() *mgo.Collection {
-	dbname, found := api.config.Get("db/name")
-	if !found {
-		panic("missing conf")
-	}
-
-	colname, found := api.config.Get("db/collection/name")
-	if !found {
-		panic("missing conf")
-	}
-
-	return api.dbsession.Copy().DB(dbname.(string)).C(colname.(string))
+func (a *Api) AppCollection() *mgo.Collection {
+	return a.dbsession.Clone().DB(wr.DBNAME).C(a.appcolname)
 }
 
-// Get a list of sensors
-func (api *SensorCollectionApi) GetList(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	col := api.Collection()
-	defer col.Database.Session.Close()
-
-	query := col.Find(bson.M{})
-	list := SensorList{Count: 0, Items: []Sensor{}}
-
-	count, err := query.Count()
-	if err == nil {
-		list.Count = count
-		query.All(&list.Items)
-	}
-
-	encoder := json.NewEncoder(w)
-	encoder.Encode(list)
+func (a *Api) Collection() *mgo.Collection {
+	return a.dbsession.Clone().DB(wr.DBNAME).C(a.colname)
 }
 
-// Put a named sensor in the collection.
-func (api *SensorCollectionApi) PutSensor(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx.Get("sensor")
-	if !found {
+func (a *Api) RegisterRoutes(r *router.Router) {
+	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Get(c, w, r) }, "GET")
+	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.PostMessage(c, w, r) }, "POST")
+	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Put(c, w, r) }, "PUT")
+	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Delete(c, w, r) }, "DELETE")
+	return
+}
+
+func (a *Api) Get(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	appname, _ := ctx.Get("app")
+	sensorname, _ := ctx.Get("sensor")
+
+	appcol := a.AppCollection()
+	defer appcol.Database.Session.Close()
+
+	app := &app.App{}
+	if err := appcol.Find(bson.M{"name": appname.(string)}).Select(bson.M{"name": 1}).One(&app); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	col := a.Collection()
+	q := bson.M{"name": sensorname.(string)}
+	sensor := &Sensor{}
+	if err := col.Find(q).Select(bson.M{"name": 1}).One(&sensor); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	wr.WriteJsonResponse(w, 200, sensor)
+
+	return
+}
+
+func (a *Api) Put(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	appname, _ := ctx.Get("app")
+	sensorname, _ := ctx.Get("sensor")
+
+	appcol := a.AppCollection()
+	defer appcol.Database.Session.Close()
+
+	app := &app.App{}
+	if err := appcol.Find(bson.M{"name": appname.(string)}).Select(bson.M{"name": 1}).One(&app); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	sensor := &Sensor{}
+	if err := wr.ReadJsonRequest(r, sensor); err != nil || sensor.Name != sensorname || !sensor.Valid() {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
-
-	sensor := &Sensor{Name: name.(string)}
-	err := decoder.Decode(&sensor)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if !(sensor.Name == name && sensor.Valid()) {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	col := api.Collection()
+	col := a.Collection()
 	defer col.Database.Session.Close()
 
-	if _, err := col.Upsert(bson.M{"name": name}, sensor); err != nil {
+	if _, err := col.Upsert(bson.M{"name": sensorname}, sensor); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+
+	return
 }
 
-// Get an sensor by name
-func (api *SensorCollectionApi) GetSensor(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx.Get("sensor")
-	if !found {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (a *Api) Delete(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	appname, _ := ctx.Get("app")
+	sensorname, _ := ctx.Get("sensor")
 
-	col := api.Collection()
-	defer col.Database.Session.Close()
+	appcol := a.AppCollection()
+	defer appcol.Database.Session.Close()
 
-	selector := bson.M{"name": name}
-	sensor := &Sensor{}
-	err := col.Find(selector).One(&sensor)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	encoder := json.NewEncoder(w)
-	encoder.Encode(sensor)
-}
-
-// Post data to an sensor
-func (api *SensorCollectionApi) PostToSensor(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx.Get("sensor")
-	if !found {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	col := api.Collection()
-	defer col.Database.Session.Close()
-
-	sensor := &Sensor{}
-	if err := col.Find(bson.M{"name": name}).One(&sensor); err != nil {
+	app := &app.App{}
+	if err := appcol.Find(bson.M{"name": appname.(string)}).Select(bson.M{"name": 1}).One(&app); err != nil {
+		print("X")
 		http.NotFound(w, r)
 		return
 	}
 
-	data, err := ioutil.ReadAll(r.Body)
+	col := a.Collection()
+	q := bson.M{"name": sensorname.(string)}
+	if err := col.RemoveAll(q); err != nil {
+		print("Y")
+		http.NotFound(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
+	return
+}
+
+func (a *Api) PostMessage(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	appname, _ := ctx.Get("app")
+	sensorname, _ := ctx.Get("sensor")
+
+	appcol := a.AppCollection()
+	defer appcol.Database.Session.Close()
+
+	app := &app.App{}
+	if err := appcol.Find(bson.M{"name": appname.(string)}).Select(bson.M{"name": 1}).One(&app); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	col := a.Collection()
+	q := bson.M{"name": sensorname.(string), "sensor": "POST"}
+	sensor := &Sensor{}
+	if err := col.Find(q).Select(bson.M{"name": 1}).One(&sensor); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	msg, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	}
 
-	if err := sensor.Call(data); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	wr.MQ[appname.(string)].Pub <- messaging.NewMessage(msg)
 
 	w.WriteHeader(http.StatusAccepted)
+
+	return
 }

@@ -3,11 +3,18 @@ package wr
 import (
 	"encoding/json"
 	"net/http"
+	"wr/messaging"
 )
 
 const (
 	DBNAME = "webreduce"
 )
+
+var MQ map[string]*PubSub
+
+func init() {
+	MQ = make(map[string]*PubSub)
+}
 
 type Context interface {
 	Get(key string) (interface{}, bool)
@@ -45,4 +52,25 @@ func ReadJsonRequest(r *http.Request, obj interface{}) (err error) {
 	err = decoder.Decode(&obj)
 
 	return
+}
+
+type PubSub struct {
+	Pub  chan *messaging.Message
+	dev  *messaging.Device
+	name string
+}
+
+func NewPubSub(name string) *PubSub {
+	dev, _ := messaging.NewDevice()
+	dev.StartPub(name)
+	ps := &PubSub{Pub: dev.Out, dev: dev, name: name}
+
+	return ps
+}
+
+func (ps *PubSub) Sub() chan *messaging.Message {
+	dev, _ := messaging.NewDevice()
+	dev.StartSub(ps.name)
+
+	return dev.In
 }
