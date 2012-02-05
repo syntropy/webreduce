@@ -70,4 +70,19 @@ hiro.module('APP', {
       h.resume();
     });
   },
+  "test POST app signal": function(app) {
+    var h = this;
+
+    h.expect(1);
+    h.pause();
+
+    POST({
+      url: '/' + app.name,
+      data: { action: 'start' }
+    }, function(res) {
+      h.assertEqual(res.status, 202);
+
+      h.resume();
+    });
+  },
 });
