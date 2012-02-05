@@ -1,6 +1,8 @@
 package app
 
 import (
+	"code.google.com/p/go.net/websocket"
+	"fmt"
 	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
@@ -41,6 +43,7 @@ func (a *Api) RegisterRoutes(r *router.Router) {
 	r.AddRoute("/", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.GetIndex(c, w, r) }, "GET")
 	r.AddRoute("/index.html", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.GetIndex(c, w, r) }, "GET")
 	r.AddRoute("/index.html", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.PutIndex(c, w, r) }, "PUT")
+	r.AddRoute("/ws", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.GetWebsocket(c, w, r) }, "GET")
 	return
 }
 
@@ -97,6 +100,26 @@ func (a *Api) Delete(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Api) PostSignal(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	rawname, _ := ctx.Get("app")
+	name := rawname.(string)
+
+	col := a.Collection()
+	defer col.Database.Session.Close()
+
+	app := &App{}
+	if err := col.Find(bson.M{"name": name}).Select(bson.M{"name": 1}).One(&app); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	wr.MQ[name] = wr.NewPubSub(name)
+
+	go func() {
+		for msg := range wr.MQ[name].Sub() {
+			fmt.Printf("Got: %v\n", msg)
+		}
+	}()
+
 	w.WriteHeader(http.StatusAccepted)
 
 	return
@@ -139,6 +162,27 @@ func (a *Api) PutIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+
+	return
+}
+
+func (a *Api) GetWebsocket(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	name, _ := ctx.Get("app")
+
+	col := a.Collection()
+	defer col.Database.Session.Close()
+
+	app := &App{}
+	if err := col.Find(bson.M{"name": name.(string)}).Select(bson.M{"name": 1}).One(&app); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	go websocket.Handler(func(ws *websocket.Conn) {
+		for msg := range wr.MQ[name.(string)].Sub() {
+			ws.Write(msg.Payload)
+		}
+	}).ServeHTTP(w, r)
 
 	return
 }

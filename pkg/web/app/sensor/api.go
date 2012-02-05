@@ -1,12 +1,12 @@
 package sensor
 
 import (
-	"fmt"
 	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
 	"wr"
+	"wr/messaging"
 	"wr/web/app"
 	"wr/web/router"
 )
@@ -149,7 +149,7 @@ func (a *Api) PostMessage(ctx wr.Context, w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	fmt.Printf("Message: %v", msg)
+	wr.MQ[appname.(string)].Pub <- messaging.NewMessage(msg)
 
 	return
 }
