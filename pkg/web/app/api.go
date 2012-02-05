@@ -36,6 +36,8 @@ func (a *Api) Collection() *mgo.Collection {
 func (a *Api) RegisterRoutes(r *router.Router) {
 	r.AddRoute("", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Get(c, w, r) }, "GET")
 	r.AddRoute("", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Put(c, w, r) }, "PUT")
+	r.AddRoute("", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Delete(c, w, r) }, "DELETE")
+	r.AddRoute("", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.PostSignal(c, w, r) }, "POST")
 	r.AddRoute("/", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.GetIndex(c, w, r) }, "GET")
 	r.AddRoute("/index.html", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.GetIndex(c, w, r) }, "GET")
 	r.AddRoute("/index.html", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.PutIndex(c, w, r) }, "PUT")
@@ -85,6 +87,27 @@ func (a *Api) Put(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	return
+}
+
+func (a *Api) Delete(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	name, found := ctx.Get("app")
+	if !found {
+		http.NotFound(w, r)
+		return
+	}
+
+	col := a.Collection()
+	defer col.Database.Session.Close()
+
+	if err := col.RemoveAll(bson.M{"name": name.(string)}); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	return
+}
+
+func (a *Api) PostSignal(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+
 }
 
 func (a *Api) GetIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
