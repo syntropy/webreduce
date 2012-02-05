@@ -1,17 +1,21 @@
 package messaging
 
 import (
+	zmq "github.com/alecthomas/gozmq"
 	"testing"
 	"time"
 )
 
 func TestPub(t *testing.T) {
-	addr := "tcp://127.0.0.1:11111"
+	addr := "ipc:///tmp/pub"
 	testPayload := "pub device test"
-	dev := NewDevice()
+	dev, err := NewDevice()
+	if err != nil {
+		t.Error(err)
+	}
 	go reportDeviceError(t, dev)
 
-	sub, err := NewSub()
+	sub, err := NewSub(createContext())
 	if err != nil {
 		t.Error(err)
 	}
@@ -34,12 +38,15 @@ func TestPub(t *testing.T) {
 }
 
 func TestPull(t *testing.T) {
-	addr := "tcp://127.0.0.1:11112"
+	addr := "ipc:///tmp/push"
 	testPayload := "hello"
-	dev := NewDevice()
+	dev, err := NewDevice()
+	if err != nil {
+		t.Error(err)
+	}
 	go reportDeviceError(t, dev)
 
-	push, err := NewPush()
+	push, err := NewPush(createContext())
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,12 +67,15 @@ func TestPull(t *testing.T) {
 }
 
 func TestSub(t *testing.T) {
-	addr := "tcp://127.0.0.1:11113"
+	addr := "ipc:///tmp/pub"
 	testPayload := "sub-test payloadz"
-	dev := NewDevice()
+	dev, err := NewDevice()
+	if err != nil {
+		t.Error(err)
+	}
 	go reportDeviceError(t, dev)
 
-	pub, err := NewPub()
+	pub, err := NewPub(createContext())
 	if err != nil {
 		t.Error(err)
 	}
@@ -84,7 +94,16 @@ func TestSub(t *testing.T) {
 		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
 	}
 
-	dev.StopPull("sub-test")
+	dev.StopSub("sub-test")
+}
+
+func createContext() (ctx zmq.Context) {
+	ctx, err := zmq.NewContext()
+	if err != nil {
+		panic(err)
+	}
+
+	return
 }
 
 func reportDeviceError(t *testing.T, dev *Device) {

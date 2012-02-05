@@ -10,7 +10,7 @@ type Pub struct {
 	socket zmq.Socket
 }
 
-func NewPub() (p *Pub, err error) {
+func NewPub(ctx zmq.Context) (p *Pub, err error) {
 	var socket zmq.Socket
 
 	socket, err = ctx.NewSocket(zmq.PUB)

@@ -10,7 +10,7 @@ type Push struct {
 	socket zmq.Socket
 }
 
-func NewPush() (p *Push, err error) {
+func NewPush(ctx zmq.Context) (p *Push, err error) {
 	var socket zmq.Socket
 
 	socket, err = ctx.NewSocket(zmq.PUSH)

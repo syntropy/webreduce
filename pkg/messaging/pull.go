@@ -10,7 +10,7 @@ type Pull struct {
 	socket zmq.Socket
 }
 
-func NewPull() (p *Pull, err error) {
+func NewPull(ctx zmq.Context) (p *Pull, err error) {
 	var socket zmq.Socket
 
 	socket, err = ctx.NewSocket(zmq.PULL)

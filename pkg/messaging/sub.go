@@ -10,7 +10,7 @@ type Sub struct {
 	socket zmq.Socket
 }
 
-func NewSub() (s *Sub, err error) {
+func NewSub(ctx zmq.Context) (s *Sub, err error) {
 	var socket zmq.Socket
 
 	socket, err = ctx.NewSocket(zmq.SUB)

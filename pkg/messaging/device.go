@@ -2,6 +2,7 @@ package messaging
 
 import (
 	"fmt"
+	zmq "github.com/alecthomas/gozmq"
 	"strconv"
 )
 
@@ -10,14 +11,21 @@ type Device struct {
 	Out     chan *Message
 	Err     chan error
 	sockets map[string]map[string]Socket
+	ctx     zmq.Context
 }
 
-func NewDevice() (d *Device) {
+func NewDevice() (d *Device, err error) {
+	ctx, err := zmq.NewContext()
+	if err != nil {
+		return
+	}
+
 	d = &Device{
 		In:      make(chan *Message),
 		Out:     make(chan *Message),
 		Err:     make(chan error),
 		sockets: map[string]map[string]Socket{},
+		ctx:     ctx,
 	}
 
 	return
@@ -29,7 +37,7 @@ func (d *Device) StartPub(endpoint string) {
 	d.sockets[id] = map[string]Socket{}
 
 	// XXX mocks a potential return value from the coordinator
-	addrs := []string{"tcp://127.0.0.1:11111"}
+	addrs := []string{"ipc:///tmp/pub"}
 
 	for i := range addrs {
 		d.addPub(id, addrs[i])
@@ -52,7 +60,7 @@ func (d *Device) StartPull(endpoint string) {
 	d.sockets[id] = map[string]Socket{}
 
 	// XXX mocks a potential return value from the coordinator
-	addrs := []string{"tcp://127.0.0.1:11112"}
+	addrs := []string{"ipc:///tmp/push"}
 
 	for i := range addrs {
 		d.addPull(id, addrs[i])
@@ -75,7 +83,7 @@ func (d *Device) StartSub(endpoint string) {
 	d.sockets[id] = map[string]Socket{}
 
 	// XXX mocks a potential return value from the coordinator
-	addrs := []string{"tcp://127.0.0.1:11113"}
+	addrs := []string{"ipc:///tmp/pub"}
 
 	for i := range addrs {
 		d.addSub(id, addrs[i])
@@ -99,7 +107,7 @@ func (d *Device) String() string {
 func (d *Device) addPub(id string, addr string) {
 	socks := d.sockets[id]
 	k := strconv.Itoa(len(socks) + 1)
-	p, err := NewPub()
+	p, err := NewPub(d.ctx)
 	d.emitError(err)
 
 	go func() {
@@ -128,7 +136,7 @@ func (d *Device) addPub(id string, addr string) {
 func (d *Device) addPull(id string, addr string) {
 	socks := d.sockets[id]
 	k := strconv.Itoa(len(socks) + 1)
-	p, err := NewPull()
+	p, err := NewPull(d.ctx)
 	d.emitError(err)
 
 	go func() {
@@ -157,7 +165,7 @@ func (d *Device) addPull(id string, addr string) {
 func (d *Device) addSub(id string, addr string) {
 	socks := d.sockets[id]
 	k := strconv.Itoa(len(socks) + 1)
-	sock, err := NewSub()
+	sock, err := NewSub(d.ctx)
 	d.emitError(err)
 
 	go func() {
