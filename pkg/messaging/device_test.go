@@ -7,7 +7,7 @@ import (
 )
 
 func TestPub(t *testing.T) {
-	addr := "ipc:///tmp/pub"
+	addr := "ipc:///tmp/pub-test"
 	testPayload := "pub device test"
 	dev, err := NewDevice()
 	if err != nil {
@@ -15,7 +15,7 @@ func TestPub(t *testing.T) {
 	}
 	go reportDeviceError(t, dev)
 
-	sub, err := NewSub(createContext())
+	sub, err := NewSub(createContext(), "pub-test")
 	if err != nil {
 		t.Error(err)
 	}
@@ -35,10 +35,14 @@ func TestPub(t *testing.T) {
 	}
 
 	dev.StopPub("pub-test")
+	err = sub.Close()
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestPull(t *testing.T) {
-	addr := "ipc:///tmp/push"
+	addr := "ipc:///tmp/pull-test"
 	testPayload := "hello"
 	dev, err := NewDevice()
 	if err != nil {
@@ -64,18 +68,22 @@ func TestPull(t *testing.T) {
 	}
 
 	dev.StopPull("pull-test")
+	err = push.Close()
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestSub(t *testing.T) {
-	addr := "ipc:///tmp/pub"
-	testPayload := "sub-test payloadz"
+	addr := "ipc:///tmp/sub-test"
+	testPayload := "payloadz"
 	dev, err := NewDevice()
 	if err != nil {
 		t.Error(err)
 	}
 	go reportDeviceError(t, dev)
 
-	pub, err := NewPub(createContext())
+	pub, err := NewPub(createContext(), "sub-test")
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,6 +103,10 @@ func TestSub(t *testing.T) {
 	}
 
 	dev.StopSub("sub-test")
+	err = pub.Close()
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func createContext() (ctx zmq.Context) {
