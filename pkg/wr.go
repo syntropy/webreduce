@@ -34,8 +34,15 @@ func (c *StringContext) Set(key string, value interface{}) (err error) {
 	return
 }
 
-func WriteJsonResponse(w http.ResponseWriter, status int, object interface{}) {
+func WriteJsonResponse(w http.ResponseWriter, status int, obj interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(object)
+	json.NewEncoder(w).Encode(obj)
+}
+
+func ReadJsonRequest(r *http.Request, obj interface{}) (err error) {
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&obj)
+
+	return
 }

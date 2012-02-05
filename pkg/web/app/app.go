@@ -3,7 +3,8 @@ package app
 import ()
 
 type App struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Index string `json:"index"`
 }
 
 func (a *App) Valid() (valid bool) {
