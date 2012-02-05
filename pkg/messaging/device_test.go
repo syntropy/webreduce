@@ -59,6 +59,34 @@ func TestPull(t *testing.T) {
 	dev.StopPull("pull-test")
 }
 
+func TestSub(t *testing.T) {
+	addr := "tcp://127.0.0.1:11113"
+	testPayload := "sub-test payloadz"
+	dev := NewDevice()
+	go reportDeviceError(t, dev)
+
+	pub, err := NewPub()
+	if err != nil {
+		t.Error(err)
+	}
+	err = pub.Bind(addr)
+	if err != nil {
+		t.Error(err)
+	}
+
+	dev.StartSub("sub-test")
+
+	// FIXME find a better way to detect successfull tcp handshake
+	time.Sleep(200 * time.Millisecond)
+	pub.Chan <- &Message{Payload: []byte(testPayload)}
+	msg := <-dev.In
+	if string(msg.Payload) != testPayload {
+		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
+	}
+
+	dev.StopPull("sub-test")
+}
+
 func reportDeviceError(t *testing.T, dev *Device) {
 	for err := range dev.Err {
 		t.Error(err)
