@@ -101,6 +101,8 @@ func (a *Api) Put(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusNoContent)
+
 	return
 }
 
