@@ -7,7 +7,7 @@ import (
 )
 
 func TestPub(t *testing.T) {
-	addr := "ipc:///tmp/pub"
+	addr := "ipc:///tmp/pub-test"
 	testPayload := "pub device test"
 	dev, err := NewDevice()
 	if err != nil {
@@ -33,12 +33,10 @@ func TestPub(t *testing.T) {
 	if string(msg.Payload) != testPayload {
 		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
 	}
-
-	dev.StopPub("pub-test")
 }
 
 func TestPull(t *testing.T) {
-	addr := "ipc:///tmp/push"
+	addr := "ipc:///tmp/pull-test"
 	testPayload := "hello"
 	dev, err := NewDevice()
 	if err != nil {
@@ -64,10 +62,11 @@ func TestPull(t *testing.T) {
 	}
 
 	dev.StopPull("pull-test")
+	push.Close()
 }
 
 func TestSub(t *testing.T) {
-	addr := "ipc:///tmp/pub"
+	addr := "ipc:///tmp/sub-test"
 	testPayload := "payloadz"
 	dev, err := NewDevice()
 	if err != nil {
@@ -93,8 +92,6 @@ func TestSub(t *testing.T) {
 	if string(msg.Payload) != testPayload {
 		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
 	}
-
-	dev.StopSub("sub-test")
 }
 
 func createContext() (ctx zmq.Context) {

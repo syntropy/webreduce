@@ -37,7 +37,7 @@ func (d *Device) StartPub(endpoint string) {
 	d.sockets[id] = map[string]Socket{}
 
 	// XXX mocks a potential return value from the coordinator
-	addrs := []string{"ipc:///tmp/pub"}
+	addrs := []string{"ipc:///tmp/" + endpoint}
 
 	for i := range addrs {
 		d.addPub(id, addrs[i], endpoint)
@@ -60,7 +60,7 @@ func (d *Device) StartPull(endpoint string) {
 	d.sockets[id] = map[string]Socket{}
 
 	// XXX mocks a potential return value from the coordinator
-	addrs := []string{"ipc:///tmp/push"}
+	addrs := []string{"ipc:///tmp/" + endpoint}
 
 	for i := range addrs {
 		d.addPull(id, addrs[i])
@@ -83,7 +83,7 @@ func (d *Device) StartSub(endpoint string) {
 	d.sockets[id] = map[string]Socket{}
 
 	// XXX mocks a potential return value from the coordinator
-	addrs := []string{"ipc:///tmp/pub"}
+	addrs := []string{"ipc:///tmp/" + endpoint}
 
 	for i := range addrs {
 		d.addSub(id, addrs[i], endpoint)
