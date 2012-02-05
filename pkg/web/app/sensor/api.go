@@ -151,6 +151,8 @@ func (a *Api) PostMessage(ctx wr.Context, w http.ResponseWriter, r *http.Request
 
 	wr.MQ[appname.(string)].Pub <- messaging.NewMessage(msg)
 
+	w.WriteHeader(http.StatusAccepted)
+
 	return
 }
 
