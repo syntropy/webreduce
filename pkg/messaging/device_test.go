@@ -33,6 +33,12 @@ func TestPub(t *testing.T) {
 	if string(msg.Payload) != testPayload {
 		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
 	}
+
+	dev.StopPub("pub-test")
+	err = sub.Close()
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestPull(t *testing.T) {
@@ -62,7 +68,10 @@ func TestPull(t *testing.T) {
 	}
 
 	dev.StopPull("pull-test")
-	push.Close()
+	err = push.Close()
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestSub(t *testing.T) {
@@ -91,6 +100,12 @@ func TestSub(t *testing.T) {
 	msg := <-dev.In
 	if string(msg.Payload) != testPayload {
 		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
+	}
+
+	dev.StopSub("sub-test")
+	err = pub.Close()
+	if err != nil {
+		t.Error(err)
 	}
 }
 
