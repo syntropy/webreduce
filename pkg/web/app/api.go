@@ -1,6 +1,7 @@
 package app
 
 import (
+	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
@@ -118,7 +119,12 @@ func (a *Api) PutIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	col := a.Collection()
 	defer col.Database.Session.Close()
 
-	doc := bson.M{"$set": bson.M{"index": "<html><head></head><body><h1>Hello World!</h1></body></html>"}}
+	text, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	doc := bson.M{"$set": bson.M{"index": text}}
 
 	if _, err := col.Upsert(bson.M{"name": name}, doc); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
