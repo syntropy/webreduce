@@ -1,7 +1,8 @@
 package sensor
 
 import (
-	// "io/ioutil"
+	"fmt"
+	"io/ioutil"
 	"launchpad.net/mgo"
 	"launchpad.net/mgo/bson"
 	"net/http"
@@ -41,7 +42,7 @@ func (a *Api) Collection() *mgo.Collection {
 
 func (a *Api) RegisterRoutes(r *router.Router) {
 	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Get(c, w, r) }, "GET")
-	// r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Post(c, w, r) }, "POST")
+	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.PostMessage(c, w, r) }, "POST")
 	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Put(c, w, r) }, "PUT")
 	// r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Delete(c, w, r) }, "DELETE")
 	return
@@ -120,9 +121,36 @@ func (a *Api) Put(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 // 	return
 // }
 
-// func (a *Api) PostSignal(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+func (a *Api) PostMessage(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	appname, _ := ctx.Get("app")
+	sensorname, _ := ctx.Get("sensor")
 
-// }
+	appcol := a.AppCollection()
+	defer appcol.Database.Session.Close()
+
+	app := &app.App{}
+	if err := appcol.Find(bson.M{"name": appname.(string)}).Select(bson.M{"name": 1}).One(&app); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	col := a.Collection()
+	q := bson.M{"name": sensorname.(string)}
+	sensor := &Sensor{}
+	if err := col.Find(q).Select(bson.M{"name": 1}).One(&sensor); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	msg, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	fmt.Printf("Message: %v", msg)
+
+	return
+}
 
 // func (a *Api) GetIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 // 	name, found := ctx.Get("app")
