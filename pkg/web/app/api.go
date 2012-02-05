@@ -97,7 +97,9 @@ func (a *Api) Delete(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Api) PostSignal(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusAccepted)
 
+	return
 }
 
 func (a *Api) GetIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
