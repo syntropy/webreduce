@@ -85,4 +85,28 @@ hiro.module('APP', {
       h.resume();
     });
   },
+  "test POST to WebSocket": function(app, sensor) {
+    var h = this;
+    var path = 'ws://' + location.host + '/' + app.name + '/ws';
+    var ws = new WebSocket(path);
+
+    h.expect(2);
+    h.pause();
+
+    ws.onmessage = function() {
+      ws.close();
+
+      h.assertTrue(true);
+      h.resume();
+    }
+
+    setTimeout(function() {
+      POST({
+        url: '/' + app.name + '/sensors/' + sensor.name,
+        data: { foo: 'bla' }
+      }, function(res) {
+        h.assertEqual(res.status, 202);
+      });
+    }, 1)
+  }
 });
