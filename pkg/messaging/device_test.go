@@ -29,6 +29,8 @@ func TestPub(t *testing.T) {
 	if string(msg.Payload) != testPayload {
 		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
 	}
+
+	dev.StopPub("pub-test")
 }
 
 func TestPull(t *testing.T) {
@@ -53,6 +55,8 @@ func TestPull(t *testing.T) {
 	if string(msg.Payload) != testPayload {
 		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
 	}
+
+	dev.StopPull("pull-test")
 }
 
 func reportDeviceError(t *testing.T, dev *Device) {
