@@ -178,7 +178,7 @@ func (a *Api) GetWebsocket(ctx wr.Context, w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	go websocket.Handler(func(ws *websocket.Conn) {
+	websocket.Handler(func(ws *websocket.Conn) {
 		for msg := range wr.MQ[name.(string)].Sub() {
 			ws.Write(msg.Payload)
 		}
