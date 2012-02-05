@@ -6,6 +6,39 @@ Reduce the web.
 
 Currently the API is only documented in the client integration tests in `static/test/api/*.js`.
 
+## Internals
+
+### Devices
+
+Abstract creation of complex devices for message passing, always acting on a cardinality of one. Other endpoints are addressable unique identifier.
+
+``` go
+import(
+  "wr/messaging"
+)
+
+dev := messaging.NewDevice()
+go func() {
+  err := <-dev.Err
+  panic(err)
+}()
+
+dev.StartPull("exampleapp.messages.*")
+dev.StartPub("example.messages.word.count")
+
+for msg := range dev.In {
+  dev.Out <-WordCount(msg)
+}
+```
+
+#### Goals
+
+* Abstraction with single cardinality
+* Single entry point
+* Single exit point
+* On-the fly configuraton
+* Easy configuration
+
 ### Languages
 
 At the time, only LUA is supported. The design allows adding new interpreters very easily, though.
