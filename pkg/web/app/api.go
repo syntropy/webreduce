@@ -45,11 +45,7 @@ func (a *Api) RegisterRoutes(r *router.Router) {
 }
 
 func (a *Api) Get(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx.Get("app")
-	if !found {
-		http.NotFound(w, r)
-		return
-	}
+	name, _ := ctx.Get("app")
 
 	col := a.Collection()
 	defer col.Database.Session.Close()
@@ -66,11 +62,7 @@ func (a *Api) Get(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Api) Put(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx.Get("app")
-	if !found {
-		http.NotFound(w, r)
-		return
-	}
+	name, _ := ctx.Get("app")
 
 	app := &App{}
 	if err := wr.ReadJsonRequest(r, app); err != nil || app.Name != name || !app.Valid() {
@@ -92,11 +84,7 @@ func (a *Api) Put(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Api) Delete(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx.Get("app")
-	if !found {
-		http.NotFound(w, r)
-		return
-	}
+	name, _ := ctx.Get("app")
 
 	col := a.Collection()
 	defer col.Database.Session.Close()
@@ -113,11 +101,7 @@ func (a *Api) PostSignal(ctx wr.Context, w http.ResponseWriter, r *http.Request)
 }
 
 func (a *Api) GetIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx.Get("app")
-	if !found {
-		http.NotFound(w, r)
-		return
-	}
+	name, _ := ctx.Get("app")
 
 	col := a.Collection()
 	defer col.Database.Session.Close()
@@ -135,11 +119,7 @@ func (a *Api) GetIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Api) PutIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-	name, found := ctx.Get("app")
-	if !found {
-		http.NotFound(w, r)
-		return
-	}
+	name, _ := ctx.Get("app")
 
 	col := a.Collection()
 	defer col.Database.Session.Close()
