@@ -8,9 +8,10 @@ type Sub struct {
 	Chan   chan *Message
 	Err    chan error
 	socket zmq.Socket
+	prefix string
 }
 
-func NewSub(ctx zmq.Context) (s *Sub, err error) {
+func NewSub(ctx zmq.Context, qName string) (s *Sub, err error) {
 	var socket zmq.Socket
 
 	socket, err = ctx.NewSocket(zmq.SUB)
@@ -22,9 +23,10 @@ func NewSub(ctx zmq.Context) (s *Sub, err error) {
 		Chan:   make(chan *Message),
 		Err:    make(chan error),
 		socket: socket,
+		prefix: qName,
 	}
 
-	err = s.socket.SetSockOptString(zmq.SUBSCRIBE, "")
+	err = s.socket.SetSockOptString(zmq.SUBSCRIBE, qName)
 	if err != nil {
 		return
 	}
@@ -37,7 +39,7 @@ func NewSub(ctx zmq.Context) (s *Sub, err error) {
 				break
 			}
 
-			s.Chan <- &Message{Payload: body}
+			s.Chan <- &Message{Payload: body[len(s.prefix)+1:]}
 		}
 	}()
 

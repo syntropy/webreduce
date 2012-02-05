@@ -15,7 +15,7 @@ func TestPub(t *testing.T) {
 	}
 	go reportDeviceError(t, dev)
 
-	sub, err := NewSub(createContext())
+	sub, err := NewSub(createContext(), "pub-test")
 	if err != nil {
 		t.Error(err)
 	}
@@ -68,14 +68,14 @@ func TestPull(t *testing.T) {
 
 func TestSub(t *testing.T) {
 	addr := "ipc:///tmp/pub"
-	testPayload := "sub-test payloadz"
+	testPayload := "payloadz"
 	dev, err := NewDevice()
 	if err != nil {
 		t.Error(err)
 	}
 	go reportDeviceError(t, dev)
 
-	pub, err := NewPub(createContext())
+	pub, err := NewPub(createContext(), "sub-test")
 	if err != nil {
 		t.Error(err)
 	}

@@ -40,7 +40,7 @@ func (d *Device) StartPub(endpoint string) {
 	addrs := []string{"ipc:///tmp/pub"}
 
 	for i := range addrs {
-		d.addPub(id, addrs[i])
+		d.addPub(id, addrs[i], endpoint)
 	}
 }
 
@@ -86,7 +86,7 @@ func (d *Device) StartSub(endpoint string) {
 	addrs := []string{"ipc:///tmp/pub"}
 
 	for i := range addrs {
-		d.addSub(id, addrs[i])
+		d.addSub(id, addrs[i], endpoint)
 	}
 }
 
@@ -104,10 +104,10 @@ func (d *Device) String() string {
 	return fmt.Sprintf("%#v", d)
 }
 
-func (d *Device) addPub(id string, addr string) {
+func (d *Device) addPub(id string, addr string, qName string) {
 	socks := d.sockets[id]
 	k := strconv.Itoa(len(socks) + 1)
-	p, err := NewPub(d.ctx)
+	p, err := NewPub(d.ctx, qName)
 	d.emitError(err)
 
 	go func() {
@@ -162,10 +162,10 @@ func (d *Device) addPull(id string, addr string) {
 	socks[k] = p
 }
 
-func (d *Device) addSub(id string, addr string) {
+func (d *Device) addSub(id string, addr string, qName string) {
 	socks := d.sockets[id]
 	k := strconv.Itoa(len(socks) + 1)
-	sock, err := NewSub(d.ctx)
+	sock, err := NewSub(d.ctx, qName)
 	d.emitError(err)
 
 	go func() {
