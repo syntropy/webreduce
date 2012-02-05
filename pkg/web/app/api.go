@@ -135,6 +135,8 @@ func (a *Api) GetIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Api) PutIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	if
+
 	name, found := ctx.Get("app")
 	if !found {
 		http.NotFound(w, r)
@@ -155,6 +157,8 @@ func (a *Api) PutIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 	return
 }
