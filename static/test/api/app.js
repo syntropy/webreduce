@@ -1,9 +1,14 @@
 hiro.module('APP', {
   onTest: function() {
-    var app = { name: 'coma' };
-    var html = '<html><head><title>COMA</title></head><body></body></html>';
+    var app = {
+      name: 'coma',
+      html: '<html><head><title>COMA</title></head><body></body></html>'
+    };
+    var sensor = {
+      name: 'random'
+    };
 
-    this.args = [ app, html ];
+    this.args = [ app, sensor ];
   },
   "test PUT": function(app) {
     var h = this;
@@ -13,14 +18,14 @@ hiro.module('APP', {
 
     PUT({
       url: '/' + app.name,
-      data: app
+      data: { name: app.name }
     }, function(res) {
       h.assertEqual(res.status, 204);
 
       h.resume();
     });
   },
-  "test PUT static html": function(app, html) {
+  "test PUT static html": function(app) {
     var h = this;
 
     h.expect(1);
@@ -28,14 +33,14 @@ hiro.module('APP', {
 
     PUT({
       url: '/' + app.name + '/index.html',
-      data: html
+      data: app.html
     }, function(res) {
       h.assertEqual(res.status, 204);
 
       h.resume();
     });
   },
-  "test GET static html": function(app, html) {
+  "test GET static html": function(app) {
     var h = this;
 
     h.expect(2);
@@ -45,7 +50,22 @@ hiro.module('APP', {
       url: '/' + app.name + '/index.html',
     }, function(res) {
       h.assertEqual(res.status, 200);
-      h.assertEqual(res.body, html)
+      h.assertEqual(res.body, app.html)
+
+      h.resume();
+    });
+  },
+  "test PUT app sensor": function(app, sensor) {
+    var h = this;
+
+    h.expect(1);
+    h.pause();
+
+    PUT({
+      url: '/' + app.name + '/sensors/' + sensor.name,
+      data: { name: sensor.name }
+    }, function(res) {
+      h.assertEqual(res.status, 204);
 
       h.resume();
     });
