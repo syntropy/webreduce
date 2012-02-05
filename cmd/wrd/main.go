@@ -27,6 +27,6 @@ func main() {
 	sensors.RegisterRoutes(&r)
 
 	http.Handle("/", &r)
-	// http.Handle("/test/", http.StripPrefix("/test/", http.FileServer(http.Dir("./static/test"))))
+	http.Handle("/test/", http.StripPrefix("/test/", http.FileServer(http.Dir("./static/test"))))
 	http.ListenAndServe(":8080", nil)
 }
