@@ -34,12 +34,12 @@ func (a *Api) Collection() *mgo.Collection {
 }
 
 func (a *Api) RegisterRoutes(r *router.Router) {
-	r.AddRoute("", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.GetApp(c, w, r) }, "GET")
-	r.AddRoute("", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.PutApp(c, w, r) }, "PUT")
+	r.AddRoute("", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Get(c, w, r) }, "GET")
+	r.AddRoute("", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Put(c, w, r) }, "PUT")
 	return
 }
 
-func (a *Api) GetApp(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+func (a *Api) Get(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	name, found := ctx.Get("app")
 	if !found {
 		http.NotFound(w, r)
@@ -60,7 +60,7 @@ func (a *Api) GetApp(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (a *Api) PutApp(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+func (a *Api) Put(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	name, found := ctx.Get("app")
 	if !found {
 		http.NotFound(w, r)
