@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"testing"
+	"wr"
 )
 
 func TestStaticRulePattern(t *testing.T) {
@@ -78,7 +79,7 @@ func TestDynamicRulePattern(t *testing.T) {
 	}
 
 	for _, name := range names {
-		value, found := args[name]
+		value, found := args.Get(name)
 		if found {
 			if v := values[name]; value != v {
 				t.Errorf("Got %v for name '%v', expected %v", value, name, v)
@@ -89,7 +90,7 @@ func TestDynamicRulePattern(t *testing.T) {
 	}
 }
 
-func Handler(ctx map[string]string, w http.ResponseWriter, req *http.Request) {}
+func Handler(ctx wr.Context, w http.ResponseWriter, req *http.Request) {}
 
 func TestStaticRouter(t *testing.T) {
 	prefix := "/qux"
@@ -126,7 +127,7 @@ func TestDynamicRouter(t *testing.T) {
 	}
 
 	for k, v := range map[string]string{"foo": "baz", "bar": "qux"} {
-		val, found := vs[k]
+		val, found := vs.Get(k)
 		if !found {
 			t.Errorf("Expected arg '%v' to be in args.", v)
 		} else if val != v {
