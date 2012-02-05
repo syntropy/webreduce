@@ -23,14 +23,38 @@ func NewDevice() (d *Device) {
 	return
 }
 
-func (d *Device) BeginPull(endpoint string) {
-	d.sockets["pull/"+endpoint] = map[string]Socket{}
+func (d *Device) BeginPub(endpoint string) {
+	id := "pub/" + endpoint
+
+	d.sockets[id] = map[string]Socket{}
 
 	// XXX mocks a potential return value from the coordinator
 	addrs := []string{"tcp://127.0.0.1:11111"}
 
 	for i := range addrs {
-		id := "pull/" + endpoint
+		d.addPub(id, addrs[i])
+	}
+}
+
+func (d *Device) StopPub(endpoint string) {
+	id := "pub/" + endpoint
+
+	for key, _ := range d.sockets[id] {
+		d.deleteSocket(id, key)
+	}
+
+	delete(d.sockets, endpoint)
+}
+
+func (d *Device) BeginPull(endpoint string) {
+	id := "pull/" + endpoint
+
+	d.sockets[id] = map[string]Socket{}
+
+	// XXX mocks a potential return value from the coordinator
+	addrs := []string{"tcp://127.0.0.1:11112"}
+
+	for i := range addrs {
 		d.addPull(id, addrs[i])
 	}
 }
@@ -38,9 +62,8 @@ func (d *Device) BeginPull(endpoint string) {
 func (d *Device) StopPull(endpoint string) {
 	id := "pull/" + endpoint
 
-	// XXX Stop pulling means we need to stop listnening on coordinator updates
 	for key, _ := range d.sockets[id] {
-		d.deletePull(id, key)
+		d.deleteSocket(id, key)
 	}
 
 	delete(d.sockets, endpoint)
@@ -48,6 +71,35 @@ func (d *Device) StopPull(endpoint string) {
 
 func (d *Device) String() string {
 	return fmt.Sprintf("%#v", d)
+}
+
+func (d *Device) addPub(id string, addr string) {
+	socks := d.sockets[id]
+	k := strconv.Itoa(len(socks) + 1)
+	p, err := NewPub()
+	d.emitError(err)
+
+	go func() {
+		for {
+			err := <-p.Err
+			d.emitError(err)
+
+			d.deleteSocket(id, k)
+
+			break
+		}
+	}()
+
+	err = p.Bind(addr)
+	d.emitError(err)
+
+	go func() {
+		for msg := range d.Out {
+			p.Chan <- msg
+		}
+	}()
+
+	socks[k] = p
 }
 
 func (d *Device) addPull(id string, addr string) {
@@ -61,7 +113,7 @@ func (d *Device) addPull(id string, addr string) {
 			err := <-p.Err
 			d.emitError(err)
 
-			d.deletePull(id, k)
+			d.deleteSocket(id, k)
 
 			break
 		}
@@ -79,7 +131,7 @@ func (d *Device) addPull(id string, addr string) {
 	socks[k] = p
 }
 
-func (d *Device) deletePull(id string, key string) {
+func (d *Device) deleteSocket(id string, key string) {
 	socks := d.sockets[id]
 
 	err := socks[key].Close()

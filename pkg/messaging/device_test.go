@@ -2,10 +2,37 @@ package messaging
 
 import (
 	"testing"
+	"time"
 )
 
-func TestPull(t *testing.T) {
+func TestPub(t *testing.T) {
 	addr := "tcp://127.0.0.1:11111"
+	testPayload := "pub device test"
+	dev := NewDevice()
+	go reportDeviceError(t, dev)
+
+	sub, err := NewSub()
+	if err != nil {
+		t.Error(err)
+	}
+	err = sub.Connect(addr)
+	if err != nil {
+		t.Error(err)
+	}
+
+	dev.BeginPub("pub-test")
+
+	// FIXME find a better way to detect successfull tcp handshake
+	time.Sleep(200 * time.Millisecond)
+	dev.Out <- &Message{Payload: []byte(testPayload)}
+	msg := <-sub.Chan
+	if string(msg.Payload) != testPayload {
+		t.Errorf("expected %s got %s", testPayload, string(msg.Payload))
+	}
+}
+
+func TestPull(t *testing.T) {
+	addr := "tcp://127.0.0.1:11112"
 	testPayload := "hello"
 	dev := NewDevice()
 	go reportDeviceError(t, dev)
@@ -19,7 +46,7 @@ func TestPull(t *testing.T) {
 		t.Error(err)
 	}
 
-	dev.BeginPull("test")
+	dev.BeginPull("pull-test")
 
 	push.Chan <- &Message{Payload: []byte(testPayload)}
 	msg := <-dev.In
