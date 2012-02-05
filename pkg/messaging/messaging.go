@@ -14,6 +14,12 @@ func init() {
 	}
 }
 
+type Socket interface {
+	Bind(addr string) (err error)
+	Connect(addr string) (err error)
+	Close() (err error)
+}
+
 type Message struct {
 	Payload []byte
 }

@@ -6,6 +6,7 @@ import (
 
 type Push struct {
 	Chan   chan *Message
+	Err    chan error
 	socket zmq.Socket
 }
 
@@ -19,6 +20,7 @@ func NewPush() (p *Push, err error) {
 
 	p = &Push{
 		Chan:   make(chan *Message),
+		Err:    make(chan error),
 		socket: socket,
 	}
 
@@ -28,7 +30,8 @@ func NewPush() (p *Push, err error) {
 
 			// TODO review message buffering
 			if err := p.socket.Send(msg.Payload, 0); err != nil {
-				panic(err)
+				p.Err <- err
+				break
 			}
 		}
 	}()
@@ -38,6 +41,10 @@ func NewPush() (p *Push, err error) {
 
 func (p *Push) Bind(addr string) (err error) {
 	return p.socket.Bind(addr)
+}
+
+func (p *Push) Connect(addr string) (err error) {
+	return p.socket.Connect(addr)
 }
 
 func (p *Push) Close() (err error) {

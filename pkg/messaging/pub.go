@@ -6,6 +6,7 @@ import (
 
 type Pub struct {
 	Chan   chan *Message
+	Err    chan error
 	socket zmq.Socket
 }
 
@@ -19,6 +20,7 @@ func NewPub() (p *Pub, err error) {
 
 	p = &Pub{
 		Chan:   make(chan *Message),
+		Err:    make(chan error),
 		socket: socket,
 	}
 
@@ -28,7 +30,8 @@ func NewPub() (p *Pub, err error) {
 
 			// TODO review message buffering
 			if err := p.socket.Send(msg.Payload, 0); err != nil {
-				panic(err)
+				p.Err <- err
+				break
 			}
 		}
 	}()
@@ -38,6 +41,10 @@ func NewPub() (p *Pub, err error) {
 
 func (p *Pub) Bind(addr string) (err error) {
 	return p.socket.Bind(addr)
+}
+
+func (p *Pub) Connect(addr string) (err error) {
+	return p.socket.Connect(addr)
 }
 
 func (p *Pub) Close() (err error) {
