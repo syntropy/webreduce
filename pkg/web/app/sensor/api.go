@@ -44,7 +44,7 @@ func (a *Api) RegisterRoutes(r *router.Router) {
 	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Get(c, w, r) }, "GET")
 	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.PostMessage(c, w, r) }, "POST")
 	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Put(c, w, r) }, "PUT")
-	// r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Delete(c, w, r) }, "DELETE")
+	r.AddRoute("/sensors/<sensor>", func(c wr.Context, w http.ResponseWriter, r *http.Request) { a.Delete(c, w, r) }, "DELETE")
 	return
 }
 
@@ -106,22 +106,32 @@ func (a *Api) Put(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// func (a *Api) Delete(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-// 	name, found := ctx.Get("app")
-// 	if !found {
-// 		http.NotFound(w, r)
-// 		return
-// 	}
+func (a *Api) Delete(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
+	appname, _ := ctx.Get("app")
+	sensorname, _ := ctx.Get("sensor")
 
-// 	col := a.Collection()
-// 	defer col.Database.Session.Close()
+	appcol := a.AppCollection()
+	defer appcol.Database.Session.Close()
 
-// 	if err := col.RemoveAll(bson.M{"name": name.(string)}); err != nil {
-// 		http.NotFound(w, r)
-// 		return
-// 	}
-// 	return
-// }
+	app := &app.App{}
+	if err := appcol.Find(bson.M{"name": appname.(string)}).Select(bson.M{"name": 1}).One(&app); err != nil {
+		print("X")
+		http.NotFound(w, r)
+		return
+	}
+
+	col := a.Collection()
+	q := bson.M{"name": sensorname.(string)}
+	if err := col.RemoveAll(q); err != nil {
+		print("Y")
+		http.NotFound(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
+	return
+}
 
 func (a *Api) PostMessage(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
 	appname, _ := ctx.Get("app")
@@ -155,50 +165,3 @@ func (a *Api) PostMessage(ctx wr.Context, w http.ResponseWriter, r *http.Request
 
 	return
 }
-
-// func (a *Api) GetIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-// 	name, found := ctx.Get("app")
-// 	if !found {
-// 		http.NotFound(w, r)
-// 		return
-// 	}
-
-// 	col := a.Collection()
-// 	defer col.Database.Session.Close()
-
-// 	app := &App{}
-// 	if err := col.Find(bson.M{"name": name.(string)}).Select(bson.M{"index": 1}).One(&app); err != nil {
-// 		http.NotFound(w, r)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-type", "text/html")
-// 	w.Write([]byte(app.Index))
-
-// 	return
-// }
-
-// func (a *Api) PutIndex(ctx wr.Context, w http.ResponseWriter, r *http.Request) {
-// 	name, found := ctx.Get("app")
-// 	if !found {
-// 		http.NotFound(w, r)
-// 		return
-// 	}
-
-// 	col := a.Collection()
-// 	defer col.Database.Session.Close()
-
-// 	text, err := ioutil.ReadAll(r.Body)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
-
-// 	doc := bson.M{"$set": bson.M{"index": text}}
-
-// 	if _, err := col.Upsert(bson.M{"name": name}, doc); err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	return
-// }

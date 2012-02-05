@@ -108,5 +108,28 @@ hiro.module('APP', {
         h.assertEqual(res.status, 202);
       });
     }, 1)
+  },
+  "test DELETE app sensor": function(app, sensor) {
+    var h = this;
+
+    h.expect(2);
+    h.pause();
+
+    DELETE({
+      url: '/' + app.name + '/sensors/' + sensor.name,
+      data: { name: sensor.name, sensor: "POST" }
+    }, function(res) {
+      h.assertEqual(res.status, 204);
+
+      h.resume();
+    });
+
+    GET({
+      url: '/' + app.name + '/sensors/' + sensor.name
+    }, function(res) {
+      h.assertEqual(res.status, 404);
+
+      h.resume();
+    });
   }
 });
