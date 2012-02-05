@@ -6,10 +6,11 @@ import (
 
 type Pull struct {
 	Chan   chan *Message
+	Err    chan error
 	socket zmq.Socket
 }
 
-func NewPull() (p *Pull, err error) {
+func NewPull(ctx zmq.Context) (p *Pull, err error) {
 	var socket zmq.Socket
 
 	socket, err = ctx.NewSocket(zmq.PULL)
@@ -19,6 +20,7 @@ func NewPull() (p *Pull, err error) {
 
 	p = &Pull{
 		Chan:   make(chan *Message),
+		Err:    make(chan error),
 		socket: socket,
 	}
 
@@ -26,7 +28,8 @@ func NewPull() (p *Pull, err error) {
 		for {
 			body, err := p.socket.Recv(0)
 			if err != nil {
-				panic(err)
+				p.Err <- err
+				break
 			}
 
 			p.Chan <- &Message{Payload: body}
@@ -34,6 +37,10 @@ func NewPull() (p *Pull, err error) {
 	}()
 
 	return
+}
+
+func (p *Pull) Bind(addr string) (err error) {
+	return p.socket.Bind(addr)
 }
 
 func (p *Pull) Connect(addr string) (err error) {
