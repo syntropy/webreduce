@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
+const (
+	DBNAME = "webreduce"
+)
+
 type Context interface {
 	Get(key string) (interface{}, bool)
 	Set(key string, value interface{}) error
